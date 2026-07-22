@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/context/useAuth'
-import { supabase } from '@/lib/supabase'
+import { fetchMonthlyUsedHours } from '@/lib/bookings'
 import { cn } from '@/lib/utils'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
@@ -14,30 +14,10 @@ export function MonthlyQuota() {
       return
     }
 
-    async function fetchUsedHours() {
-      const now = new Date()
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
-      const startOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString()
-
-      // Fetch bookings for the current month
-      const { data, error } = await supabase
-        .from('bookings')
-        .select('hours_charged')
-        .eq('user_id', profile.id)
-        .eq('status', 'confirmed')
-        .gte('start_at', startOfMonth)
-        .lt('start_at', startOfNextMonth)
-
-      if (error) {
-        console.error('Error loading bookings:', error)
-      } else {
-        setUsedHours(data.reduce((sum, booking) => sum + booking.hours_charged, 0))
-      }
-
-      setLoading(false)
-    }
-
-    fetchUsedHours()
+    fetchMonthlyUsedHours(profile.id)
+      .then(setUsedHours)
+      .catch((error) => console.error('Error loading bookings:', error))
+      .finally(() => setLoading(false))
   }, [profile])
 
   const quota = profile?.monthly_quota_hours ?? 0
@@ -57,8 +37,11 @@ export function MonthlyQuota() {
     danger: "bg-destructive",
   }[severity]
 
+  const daysLeftUntilNextMonth = Math.ceil((new Date().setMonth(new Date().getMonth() + 1, 1) - new Date()) / (1000 * 3600 * 24));
+  const resetText = daysLeftUntilNextMonth > 0 ? `in ${daysLeftUntilNextMonth} day${daysLeftUntilNextMonth > 1 ? 's' : ''}` : "today"
+
   return (
-    <Card className="max-w-sm">
+    <Card className="h-32 self-start">
       <CardHeader>
         <CardTitle>Monthly quota</CardTitle>
       </CardHeader>
@@ -68,8 +51,8 @@ export function MonthlyQuota() {
         ) : (
           <div className="flex flex-col gap-2">
             <p className="text-sm">
-              <span className="font-semibold">{usedHours} hour{usedHours > 0 ? 's' : ''}</span>
-              <span className="text-muted-foreground"> used of {quota} hour{quota > 0 ? 's' : ''}</span>
+              <span className="font-semibold">{usedHours} hour{usedHours > 1 ? 's' : ''}</span>
+              <span className="text-muted-foreground"> used of {quota} hour{quota > 1 ? 's' : ''}</span>
             </p>
             <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
               <div
@@ -78,7 +61,7 @@ export function MonthlyQuota() {
               />
             </div>
             <p className="text-xs text-muted-foreground">
-              {Math.max(quota - usedHours, 0)} hour{Math.max(quota - usedHours, 0) > 0 ? 's' : ''} remaining
+                {Math.max(quota - usedHours, 0)} hour{Math.max(quota - usedHours, 0) > 1 ? 's' : ''} remaining, resetting {resetText}
             </p>
           </div>
         )}
