@@ -1,9 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useAuth } from '@/context/useAuth'
 import { supabase } from '@/lib/supabase'
+import { usePaginatedQuery } from '@/hooks/usePaginatedQuery'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { DialogSubmitFooter } from '@/components/ui/dialog-submit-footer'
+import { Pagination } from '@/components/ui/pagination'
 import { Field, FieldLabel, FieldError, FieldGroup } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
@@ -12,49 +15,42 @@ const RESOURCE_TYPES = ['office', 'room']
 
 const emptyForm = { id: null, name: '', type: 'office', capacity: '1' }
 
-async function fetchResources(siteId, page, pageSize, setResources, setTotalCount) {
-  const from = page * pageSize
-  const to = from + pageSize - 1
-
-  const { data, error, count } = await supabase
-    .from('resources')
-    .select('id, name, type, capacity', { count: 'exact' })
-    .eq('site_id', siteId)
-    .order('name')
-    .range(from, to)
-
-  if (error) {
-    console.error('Error loading resources:', error)
-  } else {
-    setResources(data)
-    setTotalCount(count ?? 0)
-  }
-}
-
-export function ManageResources({ pageSize = 5 }) {
+export function ManageResources({ pageSize = 5, siteId: siteIdProp, siteSelector }) {
   const { profile } = useAuth()
+  const siteId = siteIdProp ?? profile?.site_id
   const [resources, setResources] = useState([])
-  const [totalCount, setTotalCount] = useState(0)
-  const [page, setPage] = useState(0)
-  const [prevPageSize, setPrevPageSize] = useState(pageSize)
-  const [loading, setLoading] = useState(true)
   const [open, setOpen] = useState(false)
   const [form, setForm] = useState(emptyForm)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
 
-  if (pageSize !== prevPageSize) {
-    setPrevPageSize(pageSize)
-    setPage(0)
-  }
+  const { page, setPage, totalPages, loading, refetch } = usePaginatedQuery(
+    async (page, pageSize) => {
+      if (!siteId) {
+        return { count: 0 }
+      }
 
-  useEffect(() => {
-    if (!profile?.site_id) {
-      return
-    }
+      const from = page * pageSize
+      const to = from + pageSize - 1
 
-    fetchResources(profile.site_id, page, pageSize, setResources, setTotalCount).finally(() => setLoading(false))
-  }, [profile, page, pageSize])
+      const { data, error: fetchError, count } = await supabase
+        .from('resources')
+        .select('id, name, type, capacity', { count: 'exact' })
+        .eq('site_id', siteId)
+        .order('name')
+        .range(from, to)
+
+      if (fetchError) {
+        console.error('Error loading resources:', fetchError)
+        return { count: 0 }
+      }
+
+      setResources(data)
+      return { count }
+    },
+    [siteId],
+    pageSize
+  )
 
   const editing = form.id !== null
 
@@ -84,7 +80,7 @@ export function ManageResources({ pageSize = 5 }) {
     // Handle both update and insert operations
     const { error: submitError } = form.id
       ? await supabase.from('resources').update(payload).eq('id', form.id)
-      : await supabase.from('resources').insert({ ...payload, site_id: profile.site_id })
+      : await supabase.from('resources').insert({ ...payload, site_id: siteId })
 
     if (submitError) {
       if (submitError.code === '23505') {
@@ -93,7 +89,7 @@ export function ManageResources({ pageSize = 5 }) {
         setError(submitError.message)
       }
     } else {
-      await fetchResources(profile.site_id, page, pageSize, setResources, setTotalCount)
+      refetch()
       setOpen(false)
       setForm(emptyForm)
     }
@@ -111,16 +107,17 @@ export function ManageResources({ pageSize = 5 }) {
     if (deleteError) {
       console.error('Error deleting resource:', deleteError)
     } else {
-      await fetchResources(profile.site_id, page, pageSize, setResources, setTotalCount)
+      refetch()
     }
   }
-
-  const totalPages = Math.max(Math.ceil(totalCount / pageSize), 1)
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Resources</CardTitle>
+        <div className="flex min-h-8 flex-wrap items-center gap-3">
+          <CardTitle>Resources</CardTitle>
+          {siteSelector && <div className="w-44">{siteSelector}</div>}
+        </div>
         <CardAction>
           <Button type="button" size="sm" onClick={openAddDialog}>
             Add resource
@@ -157,31 +154,7 @@ export function ManageResources({ pageSize = 5 }) {
           </ul>
         )}
 
-        {totalPages > 1 && (
-          <div className="grid grid-cols-3 items-center pt-1">
-            <Button
-              variant="outline"
-              size="sm"
-              hidden={page === 0}
-              onClick={() => setPage((p) => p - 1)}
-              className="col-start-1 justify-self-start"
-            >
-              Previous
-            </Button>
-            <span className="col-start-2 justify-self-center text-xs text-muted-foreground">
-              Page {page + 1} of {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              hidden={page + 1 >= totalPages}
-              onClick={() => setPage((p) => p + 1)}
-              className="col-start-3 justify-self-end"
-            >
-              Next
-            </Button>
-          </div>
-        )}
+        <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
       </CardContent>
 
       <Dialog open={open} onOpenChange={setOpen}>
@@ -241,11 +214,7 @@ export function ManageResources({ pageSize = 5 }) {
 
               {error && <FieldError>{error}</FieldError>}
 
-              <DialogFooter>
-                <Button type="submit" disabled={submitting}>
-                  {submitting ? '...' : editing ? 'Save changes' : 'Add resource'}
-                </Button>
-              </DialogFooter>
+              <DialogSubmitFooter submitting={submitting} label={editing ? 'Save changes' : 'Add resource'} />
             </FieldGroup>
           </form>
         </DialogContent>

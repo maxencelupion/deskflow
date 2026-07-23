@@ -4,6 +4,7 @@ import { ProtectedRoute } from './components/ProtectedRoute'
 import { GuestRoute } from './components/GuestRoute'
 import Auth from './pages/Auth'
 import Dashboard from './pages/Dashboard'
+import Users from './pages/Users'
 
 export default function App() {
   return (
@@ -23,6 +24,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/users"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <Users />
             </ProtectedRoute>
           }
         />

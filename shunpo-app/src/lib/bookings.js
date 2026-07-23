@@ -14,6 +14,14 @@ export const BOOKING_STATUS_LABELS = {
   [BOOKING_STATUS.CANCELLED_CHARGED]: 'Cancelled but charged',
 }
 
+// 24 hours in milliseconds
+const LATE_CANCELLATION_WINDOW_MS = 24 * 60 * 60 * 1000
+
+export function isLateCancellation(startAt) {
+  // Everything is in milliseconds
+  return new Date(startAt).getTime() - Date.now() < LATE_CANCELLATION_WINDOW_MS
+}
+
 export async function fetchMonthlyUsedHours(userId) {
   const { startOfMonth, startOfNextMonth } = getCurrentMonthRange()
 
@@ -38,6 +46,20 @@ export async function createBooking({ resourceId, startAt, hours }) {
     p_start_at: startAt.toISOString(),
     p_hours: hours,
   })
+}
+
+export async function cancelBooking(booking) {
+  const late = isLateCancellation(booking.start_at)
+
+  const { error } = await supabase
+    .from('bookings')
+    .update({
+      status: late ? BOOKING_STATUS.CANCELLED_CHARGED : BOOKING_STATUS.CANCELLED_NOT_CHARGED,
+      cancelled_at: new Date().toISOString(),
+    })
+    .eq('id', booking.id)
+
+  return { error, late }
 }
 
 export async function fetchResourceBookings({ resourceId, rangeStart, rangeEnd }) {

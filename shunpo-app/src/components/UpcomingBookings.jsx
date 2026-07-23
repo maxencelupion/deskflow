@@ -1,67 +1,48 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useAuth } from '@/context/useAuth'
 import { supabase } from '@/lib/supabase'
-import { BOOKING_STATUS } from '@/lib/bookings'
+import { usePaginatedQuery } from '@/hooks/usePaginatedQuery'
+import { BOOKING_STATUS, cancelBooking, isLateCancellation } from '@/lib/bookings'
 import { formatBookingRange } from '@/lib/dates'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Pagination } from '@/components/ui/pagination'
 import { NewBookingDialog } from '@/components/NewBookingDialog'
-
-// 24 hours in milliseconds
-const LATE_CANCELLATION_WINDOW_MS = 24 * 60 * 60 * 1000
-
-function isLateCancellation(startAt) {
-  // Everything is in milliseconds
-  return new Date(startAt).getTime() - Date.now() < LATE_CANCELLATION_WINDOW_MS
-}
-
-async function fetchBookings(userId, page, pageSize, setBookings, setTotalCount, setLoading) {
-  setLoading(true)
-
-  const from = page * pageSize
-  const to = from + pageSize - 1
-
-  const { data, error, count } = await supabase
-    .from('bookings')
-    .select('id, start_at, end_at, hours_charged, seat_number, resources(name, sites(name))', { count: 'exact' })
-    .eq('user_id', userId)
-    .eq('status', BOOKING_STATUS.CONFIRMED)
-    .gte('start_at', new Date().toISOString())
-    .order('start_at', { ascending: true })
-    .range(from, to)
-
-  if (error) {
-    console.error('Error loading bookings:', error)
-  } else {
-    setBookings(data)
-    setTotalCount(count ?? 0)
-  }
-
-  setLoading(false)
-}
 
 export function UpcomingBookings({ pageSize = 5, onBookingsChanged }) {
   const { profile } = useAuth()
   const [bookings, setBookings] = useState([])
-  const [totalCount, setTotalCount] = useState(0)
-  const [page, setPage] = useState(0)
-  const [prevPageSize, setPrevPageSize] = useState(pageSize)
-  const [loading, setLoading] = useState(true)
   const [cancellingId, setCancellingId] = useState(null)
 
-  // Reset to page 0 whenever pageSize changes (e.g. resizing across the mobile breakpoint)
-  if (pageSize !== prevPageSize) {
-    setPrevPageSize(pageSize)
-    setPage(0)
-  }
+  const { page, setPage, totalPages, loading, refetch } = usePaginatedQuery(
+    async (page, pageSize) => {
+      if (!profile) {
+        return { count: 0 }
+      }
 
-  useEffect(() => {
-    if (!profile) {
-      return
-    }
+      const from = page * pageSize
+      const to = from + pageSize - 1
 
-    fetchBookings(profile.id, page, pageSize, setBookings, setTotalCount, setLoading)
-  }, [profile, page, pageSize])
+      const { data, error, count } = await supabase
+        .from('bookings')
+        .select('id, start_at, end_at, hours_charged, seat_number, resources(name, sites(name))', { count: 'exact' })
+        .eq('user_id', profile.id)
+        .eq('status', BOOKING_STATUS.CONFIRMED)
+        .gte('start_at', new Date().toISOString())
+        .order('start_at', { ascending: true })
+        .range(from, to)
+
+      if (error) {
+        console.error('Error loading bookings:', error)
+        return { count: 0 }
+      }
+
+      setBookings(data)
+      return { count }
+    },
+    [profile?.id ?? ''],
+    pageSize
+  )
 
   async function handleCancel(booking) {
     const late = isLateCancellation(booking.start_at)
@@ -76,18 +57,12 @@ export function UpcomingBookings({ pageSize = 5, onBookingsChanged }) {
 
     setCancellingId(booking.id)
 
-    const { error } = await supabase
-      .from('bookings')
-      .update({
-        status: late ? BOOKING_STATUS.CANCELLED_CHARGED : BOOKING_STATUS.CANCELLED_NOT_CHARGED,
-        cancelled_at: new Date().toISOString(),
-      })
-      .eq('id', booking.id)
+    const { error } = await cancelBooking(booking)
 
     if (error) {
       console.error('Error cancelling booking:', error)
     } else {
-      await fetchBookings(profile.id, page, pageSize, setBookings, setTotalCount, setLoading)
+      refetch()
       onBookingsChanged?.()
     }
 
@@ -95,11 +70,9 @@ export function UpcomingBookings({ pageSize = 5, onBookingsChanged }) {
   }
 
   function handleBooked() {
-    fetchBookings(profile.id, page, pageSize, setBookings, setTotalCount, setLoading)
+    refetch()
     onBookingsChanged?.()
   }
-
-  const totalPages = Math.max(Math.ceil(totalCount / pageSize), 1)
 
   return (
     <Card>
@@ -146,31 +119,7 @@ export function UpcomingBookings({ pageSize = 5, onBookingsChanged }) {
               })}
             </ul>
 
-            {totalPages > 1 && (
-              <div className="grid grid-cols-3 items-center pt-1">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  hidden={page === 0}
-                  onClick={() => setPage((p) => p - 1)}
-                  className="col-start-1 justify-self-start"
-                >
-                  Previous
-                </Button>
-                <span className="col-start-2 justify-self-center text-xs text-muted-foreground">
-                  Page {page + 1} of {totalPages}
-                </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  hidden={page + 1 >= totalPages}
-                  onClick={() => setPage((p) => p + 1)}
-                  className="col-start-3 justify-self-end"
-                >
-                  Next
-                </Button>
-              </div>
-            )}
+            <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
           </div>
         )}
       </CardContent>

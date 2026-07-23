@@ -1,17 +1,16 @@
 import { useState } from 'react'
 import { useAuth } from '@/context/useAuth'
-import { useMediaQuery } from '@/hooks/useMediaQuery'
+import { usePageSize } from '@/hooks/usePageSize'
 import { MonthlyQuota } from '@/components/MonthlyQuota'
 import { UpcomingBookings } from '@/components/UpcomingBookings'
 import { ManageResources } from '@/components/ManageResources'
 import { SiteBookings } from '@/components/SiteBookings'
+import { AdminDashboardSection } from '@/components/AdminDashboardSection'
 
 export default function Dashboard() {
   const { profile } = useAuth()
   const [quotaRefreshKey, setQuotaRefreshKey] = useState(0)
-  // Below Tailwind's `sm` breakpoint (640px)
-  const isMobile = useMediaQuery('(max-width: 639px)')
-  const pageSize = isMobile ? 3 : 5
+  const pageSize = usePageSize()
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 p-4 md:p-10">
@@ -28,6 +27,8 @@ export default function Dashboard() {
           <SiteBookings pageSize={pageSize} />
         </div>
       )}
+
+      {profile?.role === 'admin' && <AdminDashboardSection pageSize={pageSize} />}
     </div>
   )
 }

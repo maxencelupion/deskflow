@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { fetchMonthlyUsedHours, fetchResourceBookings, createBooking } from '@/lib/bookings'
 import {
+  DAY_NAMES,
   lastDayOfCurrentMonth,
   getDayOfWeek,
   toDateInputValue,
@@ -15,11 +16,10 @@ import {
 } from '@/lib/dates'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { DialogSubmitFooter } from '@/components/ui/dialog-submit-footer'
 import { Field, FieldLabel, FieldDescription, FieldError, FieldGroup } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-
-const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
 const SELECT_CLASSNAME = "h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40"
 
@@ -50,14 +50,17 @@ export function NewBookingDialog({ onBooked }) {
     setSiteId('')
     setResourceId('')
     setDate('')
-    setStartTime('')
-    setHours('')
+    resetTimeSelection()
     setError(null)
     setNow(Date.now())
     setOpen(true)
   }
 
   useEffect(() => {
+    if (!open || sites.length > 0) {
+      return
+    }
+
     async function loadSites() {
       const { data, error } = await supabase.from('sites').select('id, name').order('name')
 
@@ -69,7 +72,7 @@ export function NewBookingDialog({ onBooked }) {
     }
 
     loadSites()
-  }, [])
+  }, [open, sites.length])
 
   useEffect(() => {
     if (!profile || !open) {
@@ -398,11 +401,7 @@ export function NewBookingDialog({ onBooked }) {
                 <FieldError className="text-center">{error}</FieldError>
               )}
 
-              <DialogFooter>
-                <Button type="submit" disabled={!canSubmit || submitting}>
-                  {submitting ? "..." : "Confirm booking"}
-                </Button>
-              </DialogFooter>
+              <DialogSubmitFooter submitting={submitting} disabled={!canSubmit} label="Confirm booking" />
             </FieldGroup>
           </form>
         </DialogContent>

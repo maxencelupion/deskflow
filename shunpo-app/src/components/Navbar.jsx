@@ -8,11 +8,13 @@ import { useScrollDirection } from "@/hooks/useScrollDirection"
 
 const NAV_LINKS = [
   { to: "/", label: "Dashboard" },
+  { to: "/users", label: "Users", roles: ["admin"] },
 ]
 
 export function Navbar() {
   const hidden = useScrollDirection()
-  const { session } = useAuth()
+  const { session, profile } = useAuth()
+  const links = NAV_LINKS.filter((link) => !link.roles || link.roles.includes(profile?.role))
 
   return (
     <header
@@ -26,7 +28,7 @@ export function Navbar() {
 
         {session && (
           <nav className="flex items-center gap-4">
-            {NAV_LINKS.map((link, i) => (
+            {links.map((link, i) => (
               <div key={link.to} className="flex items-center gap-4">
                 {i > 0 && <Separator orientation="vertical" className="h-4" />}
                 <Link

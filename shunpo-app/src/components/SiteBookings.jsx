@@ -1,55 +1,80 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
+import { useAuth } from '@/context/useAuth'
 import { supabase } from '@/lib/supabase'
-import { BOOKING_STATUS_LABELS } from '@/lib/bookings'
+import { usePaginatedQuery } from '@/hooks/usePaginatedQuery'
+import { BOOKING_STATUS, BOOKING_STATUS_LABELS, cancelBooking, isLateCancellation } from '@/lib/bookings'
 import { formatBookingRange } from '@/lib/dates'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Pagination } from '@/components/ui/pagination'
 
-async function fetchSiteBookings(page, pageSize, setBookings, setTotalCount, setLoading) {
-  setLoading(true)
+export function SiteBookings({ pageSize = 5, siteId, siteSelector }) {
+  const { profile } = useAuth()
+  const canCancel = profile?.role === 'admin'
 
-  const from = page * pageSize
-  const to = from + pageSize - 1
-
-  const { data, error, count } = await supabase
-    .from('bookings')
-    .select('id, start_at, end_at, hours_charged, seat_number, status, resources(name), profiles(email)', { count: 'exact' })
-    .order('start_at', { ascending: false })
-    .range(from, to)
-
-  if (error) {
-    console.error('Error loading site bookings:', error)
-  } else {
-    setBookings(data)
-    setTotalCount(count ?? 0)
-  }
-
-  setLoading(false)
-}
-
-export function SiteBookings({ pageSize = 5 }) {
   const [bookings, setBookings] = useState([])
-  const [totalCount, setTotalCount] = useState(0)
-  const [page, setPage] = useState(0)
-  const [prevPageSize, setPrevPageSize] = useState(pageSize)
-  const [loading, setLoading] = useState(true)
+  const [cancellingId, setCancellingId] = useState(null)
 
-  // Reset to page 0 whenever pageSize changes (e.g. resizing across the mobile breakpoint)
-  if (pageSize !== prevPageSize) {
-    setPrevPageSize(pageSize)
-    setPage(0)
+  const { page, setPage, totalPages, loading, refetch } = usePaginatedQuery(
+    async (page, pageSize) => {
+      const from = page * pageSize
+      const to = from + pageSize - 1
+
+      let query = supabase
+        .from('bookings')
+        .select('id, start_at, end_at, hours_charged, seat_number, status, resources!inner(name, site_id, sites(name)), profiles(email)', { count: 'exact' })
+        .order('start_at', { ascending: false })
+        .range(from, to)
+
+      if (siteId) {
+        query = query.eq('resources.site_id', siteId)
+      }
+
+      const { data, error: fetchError, count } = await query
+
+      if (fetchError) {
+        console.error('Error loading site bookings:', fetchError)
+        return { count: 0 }
+      }
+
+      setBookings(data)
+      return { count }
+    },
+    [siteId],
+    pageSize
+  )
+
+  async function handleCancel(booking) {
+    const late = isLateCancellation(booking.start_at)
+
+    if (!window.confirm(
+      late
+        ? "Cancel this booking? It's within 24h of the start time, so the hours will stay charged to the member's quota."
+        : "Cancel this booking? The hours will be credited back to the member's quota."
+    )) {
+      return
+    }
+
+    setCancellingId(booking.id)
+
+    const { error } = await cancelBooking(booking)
+
+    if (error) {
+      console.error('Error cancelling booking:', error)
+    } else {
+      refetch()
+    }
+
+    setCancellingId(null)
   }
-
-  useEffect(() => {
-    fetchSiteBookings(page, pageSize, setBookings, setTotalCount, setLoading)
-  }, [page, pageSize])
-
-  const totalPages = Math.max(Math.ceil(totalCount / pageSize), 1)
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Site bookings</CardTitle>
+        <div className="flex min-h-8 flex-wrap items-center gap-3">
+          <CardTitle>Site bookings</CardTitle>
+          {siteSelector && <div className="w-44">{siteSelector}</div>}
+        </div>
       </CardHeader>
       <CardContent>
         {loading ? (
@@ -63,46 +88,35 @@ export function SiteBookings({ pageSize = 5 }) {
                 </li>
               ) : (
                 bookings.map((booking) => (
-                  <li key={booking.id} className="flex flex-col gap-0.5 rounded-lg border p-2">
-                    <span className="text-sm font-medium">
-                      {booking.resources?.name}  Seat {booking.seat_number}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {formatBookingRange(booking.start_at, booking.end_at)} - {booking.profiles?.email}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {BOOKING_STATUS_LABELS[booking.status] ?? booking.status}
-                    </span>
+                  <li key={booking.id} className="flex items-center justify-between gap-3 rounded-lg border p-2">
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-sm font-medium">
+                        {booking.resources?.sites?.name} - {booking.resources?.name} Seat {booking.seat_number}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {formatBookingRange(booking.start_at, booking.end_at)} - {booking.profiles?.email}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {BOOKING_STATUS_LABELS[booking.status] ?? booking.status}
+                      </span>
+                    </div>
+                    {canCancel && booking.status === BOOKING_STATUS.CONFIRMED && (
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        disabled={cancellingId === booking.id}
+                        onClick={() => handleCancel(booking)}
+                      >
+                        Cancel
+                      </Button>
+                    )}
                   </li>
                 ))
               )}
             </ul>
 
-            {totalPages > 1 && (
-              <div className="grid grid-cols-3 items-center pt-1">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  hidden={page === 0}
-                  onClick={() => setPage((p) => p - 1)}
-                  className="col-start-1 justify-self-start"
-                >
-                  Previous
-                </Button>
-                <span className="col-start-2 justify-self-center text-xs text-muted-foreground">
-                  Page {page + 1} of {totalPages}
-                </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  hidden={page + 1 >= totalPages}
-                  onClick={() => setPage((p) => p + 1)}
-                  className="col-start-3 justify-self-end"
-                >
-                  Next
-                </Button>
-              </div>
-            )}
+            <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
           </div>
         )}
       </CardContent>

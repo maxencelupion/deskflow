@@ -26,11 +26,19 @@ export function MonthlyQuota({ refreshKey }) {
     ? Math.min((usedHours / quota) * 100, 100)
     : 0
 
-  const severity = usedHours === null || usedHours < quota * 0.8
-    ? "normal"
-    : usedHours >= quota
-      ? "danger"
-      : "warning"
+  function severityFor(used, quota) {
+    if (used === null || used < quota * 0.8) {
+      return "normal"
+    }
+
+    if (used >= quota) {
+      return "danger"
+    }
+
+    return "warning"
+  }
+
+  const severity = severityFor(usedHours, quota)
 
   const fillClass = {
     normal: "bg-primary",
