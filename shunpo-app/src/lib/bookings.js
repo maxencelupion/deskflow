@@ -8,7 +8,7 @@ export async function fetchMonthlyUsedHours(userId) {
     .from('bookings')
     .select('hours_charged')
     .eq('user_id', userId)
-    .eq('status', 'confirmed')
+    .in('status', ['confirmed', 'cancelled_charged'])
     .gte('start_at', startOfMonth.toISOString())
     .lt('start_at', startOfNextMonth.toISOString())
 

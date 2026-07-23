@@ -5,7 +5,7 @@ import { getCurrentMonthRange } from '@/lib/dates'
 import { cn } from '@/lib/utils'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
-export function MonthlyQuota() {
+export function MonthlyQuota({ refreshKey }) {
   const { profile } = useAuth()
   const [usedHours, setUsedHours] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -19,7 +19,7 @@ export function MonthlyQuota() {
       .then(setUsedHours)
       .catch((error) => console.error('Error loading bookings:', error))
       .finally(() => setLoading(false))
-  }, [profile])
+  }, [profile, refreshKey])
 
   const quota = profile?.monthly_quota_hours ?? 0
   const percentUsed = usedHours !== null && quota > 0

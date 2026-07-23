@@ -38,7 +38,7 @@ async function fetchBookings(userId, page, pageSize, setBookings, setTotalCount,
   setLoading(false)
 }
 
-export function UpcomingBookings({ pageSize = 5 }) {
+export function UpcomingBookings({ pageSize = 5, onCancelled }) {
   const { profile } = useAuth()
   const [bookings, setBookings] = useState([])
   const [totalCount, setTotalCount] = useState(0)
@@ -79,6 +79,8 @@ export function UpcomingBookings({ pageSize = 5 }) {
       console.error('Error cancelling booking:', error)
     } else {
       await fetchBookings(profile.id, page, pageSize, setBookings, setTotalCount, setLoading)
+      // Call the onCancelled callback to trigger a quota refresh
+      onCancelled?.()
     }
 
     setCancellingId(null)
