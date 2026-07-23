@@ -1,21 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/context/useAuth'
 import { supabase } from '@/lib/supabase'
+import { formatBookingRange } from '@/lib/dates'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 // 24 hours in milliseconds
 const LATE_CANCELLATION_WINDOW_MS = 24 * 60 * 60 * 1000
-
-const dateFormatter = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' })
-const timeFormatter = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit' })
-
-function formatBookingRange(startAt, endAt) {
-  const start = new Date(startAt)
-  const end = new Date(endAt)
-
-  return `${dateFormatter.format(start)} · ${timeFormatter.format(start)}–${timeFormatter.format(end)}`
-}
 
 function isLateCancellation(startAt) {
   // Everything is in milliseconds
@@ -30,7 +21,7 @@ async function fetchBookings(userId, page, pageSize, setBookings, setTotalCount,
 
   const { data, error, count } = await supabase
     .from('bookings')
-    .select('id, start_at, end_at, hours_charged, resources(name, sites(name))', { count: 'exact' })
+    .select('id, start_at, end_at, hours_charged, seat_number, resources(name, sites(name))', { count: 'exact' })
     .eq('user_id', userId)
     .eq('status', 'confirmed')
     .gte('start_at', new Date().toISOString())
@@ -115,7 +106,7 @@ export function UpcomingBookings({ pageSize = 5 }) {
                   <li key={booking.id} className="flex items-center justify-between gap-3">
                     <div className="flex flex-col">
                       <span className="text-sm font-medium">
-                        {booking.resources?.sites?.name} - {booking.resources?.name}
+                        {booking.resources?.sites?.name} - {booking.resources?.name} Seat {booking.seat_number}
                       </span>
                       <span className="text-xs text-muted-foreground">
                         {formatBookingRange(booking.start_at, booking.end_at)}
