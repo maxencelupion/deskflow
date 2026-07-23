@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { SquarePen } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { usePaginatedQuery } from '@/hooks/usePaginatedQuery'
 import { useSites } from '@/hooks/useSites'
@@ -122,8 +123,8 @@ export function ManageUsers({ pageSize = 5 }) {
                     </span>
                   </div>
                   {user.role !== 'admin' && (
-                    <Button type="button" variant="outline" size="sm" onClick={() => openEditDialog(user)}>
-                      Edit
+                    <Button type="button" variant="outline" size="icon-sm" aria-label="Edit" onClick={() => openEditDialog(user)}>
+                      <SquarePen />
                     </Button>
                   )}
                 </li>

@@ -401,12 +401,7 @@ export function NewBookingDialog({ onBooked }) {
                 <FieldError className="text-center">{error}</FieldError>
               )}
 
-              <DialogSubmitFooter
-                submitting={submitting}
-                disabled={!canSubmit}
-                label="Confirm booking"
-                className="border-t-0 bg-transparent"
-              />
+              <DialogSubmitFooter submitting={submitting} disabled={!canSubmit} label="Confirm booking" />
             </FieldGroup>
           </form>
         </DialogContent>

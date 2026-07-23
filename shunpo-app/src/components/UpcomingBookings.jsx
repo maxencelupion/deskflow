@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { X } from 'lucide-react'
 import { useAuth } from '@/context/useAuth'
 import { supabase } from '@/lib/supabase'
 import { usePaginatedQuery } from '@/hooks/usePaginatedQuery'
@@ -108,11 +109,12 @@ export function UpcomingBookings({ pageSize = 5, onBookingsChanged }) {
                     </div>
                     <Button
                       variant={late ? "destructive" : "outline"}
-                      size="sm"
+                      size="icon-sm"
+                      aria-label={late ? "Cancel without refund" : "Cancel"}
                       disabled={cancellingId === booking.id}
                       onClick={() => handleCancel(booking)}
                     >
-                      {late ? "Cancel without refund" : "Cancel"}
+                      <X />
                     </Button>
                   </li>
                 )

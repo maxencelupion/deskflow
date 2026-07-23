@@ -1,8 +1,18 @@
+import { cn } from "@/lib/utils"
+import { useScrollDirection } from "@/hooks/useScrollDirection"
+
 export function Footer() {
+  const hidden = useScrollDirection()
+
   return (
-    <footer className="sticky bottom-0 z-40 border-t bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
+    <footer
+      className={cn(
+        "sticky bottom-0 z-40 border-t bg-background/95 backdrop-blur transition-transform duration-300 supports-backdrop-filter:bg-background/60",
+        hidden ? "translate-y-full" : "translate-y-0"
+      )}
+    >
       <div className="mx-auto flex h-12 max-w-5xl items-center justify-center px-4 text-xs text-muted-foreground">
-        © {new Date().getFullYear()} Maxence Lupion
+        © {new Date().getFullYear()} DeskFlow
       </div>
     </footer>
   )

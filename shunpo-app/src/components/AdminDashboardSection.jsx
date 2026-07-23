@@ -7,9 +7,11 @@ export function AdminDashboardSection({ pageSize }) {
   const { sites, loading } = useSites()
 
   return (
-    <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
-      <ManageSites pageSize={pageSize} />
-      <AdminResources pageSize={pageSize} sites={sites} sitesLoading={loading} />
+    <div className="flex flex-col gap-6">
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
+        <ManageSites pageSize={pageSize} />
+        <AdminResources pageSize={pageSize} sites={sites} sitesLoading={loading} />
+      </div>
       <AdminBookings pageSize={pageSize} sites={sites} />
     </div>
   )

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { X } from 'lucide-react'
 import { useAuth } from '@/context/useAuth'
 import { supabase } from '@/lib/supabase'
 import { usePaginatedQuery } from '@/hooks/usePaginatedQuery'
@@ -104,11 +105,12 @@ export function SiteBookings({ pageSize = 5, siteId, siteSelector }) {
                       <Button
                         type="button"
                         variant="destructive"
-                        size="sm"
+                        size="icon-sm"
+                        aria-label="Cancel"
                         disabled={cancellingId === booking.id}
                         onClick={() => handleCancel(booking)}
                       >
-                        Cancel
+                        <X />
                       </Button>
                     )}
                   </li>

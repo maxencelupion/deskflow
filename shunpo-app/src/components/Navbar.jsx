@@ -1,5 +1,5 @@
 import { Link, NavLink } from "react-router-dom"
-import { LayoutDashboard, Users as UsersIcon } from "lucide-react"
+import { LayoutDashboard, LogOut, Users as UsersIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/context/useAuth"
 import { supabase } from "@/lib/supabase"
@@ -26,7 +26,7 @@ export function Navbar() {
       <div className="mx-auto grid h-full max-w-5xl grid-cols-[1fr_auto_1fr] items-center px-4">
         <Link to="/" className="flex items-center gap-2 text-sm font-semibold">
           <img src="/logo.svg" alt="" className="size-6" />
-          DeskFlow
+          <span className="hidden sm:inline">DeskFlow</span>
         </Link>
 
         {session && (
@@ -53,7 +53,7 @@ export function Navbar() {
                     )}
                   >
                     <link.icon className="size-4" />
-                    {link.label}
+                    <span className="hidden sm:inline">{link.label}</span>
                   </span>
                 )}
               </NavLink>
@@ -65,11 +65,12 @@ export function Navbar() {
           {session && (
             <Button
               variant="ghost"
-              size="sm"
+              size="icon-sm"
+              aria-label="Log out"
               className="hover:text-red-600 dark:hover:text-red-500"
               onClick={() => supabase.auth.signOut()}
             >
-              Log out
+              <LogOut className="size-4" />
             </Button>
           )}
         </div>

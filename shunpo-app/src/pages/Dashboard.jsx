@@ -6,7 +6,7 @@ import { UpcomingBookings } from '@/components/UpcomingBookings'
 import { ManageResources } from '@/components/ManageResources'
 import { SiteBookings } from '@/components/SiteBookings'
 import { AdminDashboardSection } from '@/components/AdminDashboardSection'
-import { Bubbles, Waves } from '@/components/BeachScene'
+import { PageBanner } from '@/components/PageBanner'
 
 export default function Dashboard() {
   const { profile } = useAuth()
@@ -15,20 +15,12 @@ export default function Dashboard() {
 
   return (
     <>
-      {profile?.role === 'member' && (
-        <div className="relative overflow-hidden bg-primary py-8 text-primary-foreground">
-          <Bubbles />
-          <Waves />
-          <div className="relative mx-auto flex w-full max-w-5xl items-center justify-between gap-6 px-4 md:px-10">
-            <div className="flex flex-col gap-1">
-              <p className="text-xl font-semibold">Welcome back</p>
-              <p className="text-sm text-primary-foreground/80">
-                Here's what's coming up for you.
-              </p>
-            </div>
-            <img src="/worker.svg" alt="" className="hidden h-28 w-28 shrink-0 sm:block" />
-          </div>
-        </div>
+      {profile?.role && (
+        <PageBanner
+          title="Welcome back"
+          subtitle="Here's what's coming up for you."
+          image="/worker.svg"
+        />
       )}
 
       <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 p-4 md:p-10">

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Plus, SquarePen, Trash } from 'lucide-react'
 import { useAuth } from '@/context/useAuth'
 import { supabase } from '@/lib/supabase'
 import { usePaginatedQuery } from '@/hooks/usePaginatedQuery'
@@ -119,8 +120,9 @@ export function ManageResources({ pageSize = 5, siteId: siteIdProp, siteSelector
           {siteSelector && <div className="w-44">{siteSelector}</div>}
         </div>
         <CardAction>
-          <Button type="button" size="sm" onClick={openAddDialog}>
-            Add resource
+          <Button type="button" size="sm" aria-label="Add resource" onClick={openAddDialog}>
+            <Plus />
+            <span className="hidden sm:inline">Add resource</span>
           </Button>
         </CardAction>
       </CardHeader>
@@ -141,11 +143,11 @@ export function ManageResources({ pageSize = 5, siteId: siteIdProp, siteSelector
                     <span className="text-muted-foreground">({resource.type}, capacity {resource.capacity})</span>
                   </span>
                   <div className="flex gap-2">
-                    <Button type="button" variant="outline" size="sm" onClick={() => openEditDialog(resource)}>
-                      Edit
+                    <Button type="button" variant="outline" size="icon-sm" aria-label="Edit" onClick={() => openEditDialog(resource)}>
+                      <SquarePen />
                     </Button>
-                    <Button type="button" variant="destructive" size="sm" onClick={() => handleDelete(resource)}>
-                      Delete
+                    <Button type="button" variant="destructive" size="icon-sm" aria-label="Delete" onClick={() => handleDelete(resource)}>
+                      <Trash />
                     </Button>
                   </div>
                 </li>

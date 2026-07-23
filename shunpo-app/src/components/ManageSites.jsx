@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Plus, SquarePen, Trash } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { usePaginatedQuery } from '@/hooks/usePaginatedQuery'
 import { Button } from '@/components/ui/button'
@@ -185,8 +186,9 @@ export function ManageSites({ pageSize = 5 }) {
           <CardTitle>Sites</CardTitle>
         </div>
         <CardAction>
-          <Button type="button" size="sm" onClick={openAddDialog}>
-            Add site
+          <Button type="button" size="sm" aria-label="Add site" onClick={openAddDialog}>
+            <Plus />
+            <span className="hidden sm:inline">Add site</span>
           </Button>
         </CardAction>
       </CardHeader>
@@ -204,11 +206,11 @@ export function ManageSites({ pageSize = 5 }) {
                 <li key={site.id} className="flex items-center justify-between gap-3 rounded-lg border p-2">
                   <span className="text-sm">{site.name}</span>
                   <div className="flex gap-2">
-                    <Button type="button" variant="outline" size="sm" onClick={() => openEditDialog(site)}>
-                      Edit
+                    <Button type="button" variant="outline" size="icon-sm" aria-label="Edit" onClick={() => openEditDialog(site)}>
+                      <SquarePen />
                     </Button>
-                    <Button type="button" variant="destructive" size="sm" onClick={() => handleDelete(site)}>
-                      Delete
+                    <Button type="button" variant="destructive" size="icon-sm" aria-label="Delete" onClick={() => handleDelete(site)}>
+                      <Trash />
                     </Button>
                   </div>
                 </li>
@@ -272,7 +274,7 @@ export function ManageSites({ pageSize = 5 }) {
                                 pattern="([01]\d|2[0-3]):[0-5]\d"
                                 value={day.opens_at}
                                 onChange={(e) => updateDay(i, { opens_at: e.target.value })}
-                                className="w-20"
+                                className="w-20 text-center"
                                 required
                               />
                               <span className="text-muted-foreground">–</span>
@@ -283,7 +285,7 @@ export function ManageSites({ pageSize = 5 }) {
                                 pattern="([01]\d|2[0-3]):[0-5]\d"
                                 value={day.closes_at}
                                 onChange={(e) => updateDay(i, { closes_at: e.target.value })}
-                                className="w-20"
+                                className="w-20 text-center"
                                 required
                               />
                             </div>
