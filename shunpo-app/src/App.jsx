@@ -9,16 +9,17 @@ import Users from './pages/Users'
 export default function App() {
   return (
     <Routes>
+      <Route
+        path="/login"
+        element={
+          // GuestRoute prevents authenticated users from accessing the login page.
+          // Outside <Layout> on purpose: a full-bleed auth screen, no navbar/footer.
+          <GuestRoute>
+            <Auth />
+          </GuestRoute>
+        }
+      />
       <Route element={<Layout />}>
-        <Route
-          path="/login"
-          element={
-            // GuestRoute prevents authenticated users from accessing the login page
-            <GuestRoute>
-              <Auth />
-            </GuestRoute>
-          }
-        />
         <Route
           path="/"
           element={

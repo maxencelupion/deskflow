@@ -100,7 +100,7 @@ export function LoginForm({ emailRef, onSwitchToSignup }) {
             )}
 
             <Field>
-              <Button type="submit" disabled={loading || password.length === 0}>
+              <Button type="submit" className="text-base" disabled={loading || password.length === 0}>
                 {loading ? "..." : "Log in"}
               </Button>
               <FieldDescription className="text-center">

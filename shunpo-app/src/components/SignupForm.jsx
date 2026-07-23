@@ -152,7 +152,7 @@ export function SignupForm({ emailRef, onSwitchToLogin }) {
             )}
 
             <Field>
-              <Button type="submit" disabled={loading || signupInvalid}>
+              <Button type="submit" className="text-base" disabled={loading || signupInvalid}>
                 {loading ? "..." : "Sign up"}
               </Button>
               <FieldDescription className="text-center">
