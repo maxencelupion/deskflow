@@ -4,7 +4,6 @@ import { ProtectedRoute } from './components/ProtectedRoute'
 import { GuestRoute } from './components/GuestRoute'
 import Auth from './pages/Auth'
 import Dashboard from './pages/Dashboard'
-import Book from './pages/Book'
 
 export default function App() {
   return (
@@ -24,14 +23,6 @@ export default function App() {
           element={
             <ProtectedRoute>
               <Dashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/book"
-          element={
-            <ProtectedRoute allowedRoles={['member']}>
-              <Book />
             </ProtectedRoute>
           }
         />
