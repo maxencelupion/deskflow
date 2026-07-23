@@ -21,7 +21,7 @@ import { DialogSubmitFooter } from '@/components/ui/dialog-submit-footer'
 import { Field, FieldLabel, FieldDescription, FieldError, FieldGroup } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 
-const SELECT_CLASSNAME = "h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40"
+const SELECT_CLASSNAME = "h-8 w-full min-w-0 rounded-lg border border-input bg-neutral-100 px-2.5 py-1 text-base transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-neutral-200/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-neutral-800 dark:disabled:bg-neutral-800/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40"
 
 export function NewBookingDialog({ onBooked }) {
   const { profile } = useAuth()
@@ -34,7 +34,7 @@ export function NewBookingDialog({ onBooked }) {
   const [weeklyHours, setWeeklyHours] = useState([])
   const [date, setDate] = useState('')
   const [startTime, setStartTime] = useState('')
-  const [hours, setHours] = useState('')
+  const [hours, setHours] = useState('1')
   const [dayBookings, setDayBookings] = useState([])
   const [usedHours, setUsedHours] = useState(null)
   const [submitting, setSubmitting] = useState(false)
@@ -43,7 +43,7 @@ export function NewBookingDialog({ onBooked }) {
 
   function resetTimeSelection() {
     setStartTime('')
-    setHours('')
+    setHours('1')
   }
 
   function openDialog() {
@@ -340,8 +340,8 @@ export function NewBookingDialog({ onBooked }) {
                               "rounded-lg border px-1.5 py-1 text-sm transition-colors",
                               startTime === slot
                                 ? "border-primary bg-primary text-primary-foreground"
-                                : "border-input bg-transparent hover:bg-muted",
-                              !bookable && "cursor-not-allowed border-input/50 text-muted-foreground opacity-50 line-through hover:bg-transparent"
+                                : "border-input bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700",
+                              !bookable && "cursor-not-allowed border-input/50 text-muted-foreground opacity-50 line-through hover:bg-neutral-100 dark:hover:bg-neutral-800"
                             )}
                           >
                             {slot}
@@ -401,7 +401,12 @@ export function NewBookingDialog({ onBooked }) {
                 <FieldError className="text-center">{error}</FieldError>
               )}
 
-              <DialogSubmitFooter submitting={submitting} disabled={!canSubmit} label="Confirm booking" />
+              <DialogSubmitFooter
+                submitting={submitting}
+                disabled={!canSubmit}
+                label="Confirm booking"
+                className="border-t-0 bg-transparent"
+              />
             </FieldGroup>
           </form>
         </DialogContent>

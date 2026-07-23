@@ -51,7 +51,7 @@ export function MonthlyQuota({ refreshKey }) {
   const resetText = daysLeftUntilNextMonth > 0 ? `in ${daysLeftUntilNextMonth} day${daysLeftUntilNextMonth > 1 ? 's' : ''}` : "today"
 
   return (
-    <Card className="h-32 self-start">
+    <Card className="h-32">
       <CardHeader>
         <CardTitle>Monthly quota</CardTitle>
       </CardHeader>

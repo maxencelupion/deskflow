@@ -1,14 +1,14 @@
-import { Link } from "react-router-dom"
+import { Link, NavLink } from "react-router-dom"
+import { LayoutDashboard, Users as UsersIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/context/useAuth"
 import { supabase } from "@/lib/supabase"
 import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
 import { useScrollDirection } from "@/hooks/useScrollDirection"
 
 const NAV_LINKS = [
-  { to: "/", label: "Dashboard" },
-  { to: "/users", label: "Users", roles: ["admin"] },
+  { to: "/", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/users", label: "Users", icon: UsersIcon, roles: ["admin"] },
 ]
 
 export function Navbar() {
@@ -24,20 +24,39 @@ export function Navbar() {
       )}
     >
       <div className="mx-auto grid h-full max-w-5xl grid-cols-[1fr_auto_1fr] items-center px-4">
-        <div />
+        <Link to="/" className="flex items-center gap-2 text-sm font-semibold">
+          <img src="/logo.svg" alt="" className="size-6" />
+          DeskFlow
+        </Link>
 
         {session && (
-          <nav className="flex items-center gap-4">
-            {links.map((link, i) => (
-              <div key={link.to} className="flex items-center gap-4">
-                {i > 0 && <Separator orientation="vertical" className="h-4" />}
-                <Link
-                  to={link.to}
-                  className="rounded-lg px-2.5 py-1 text-sm font-medium transition-colors hover:bg-muted hover:text-foreground dark:hover:bg-muted/50"
-                >
-                  {link.label}
-                </Link>
-              </div>
+          <nav className="flex items-center gap-1">
+            {links.map((link) => (
+              <NavLink
+                key={link.to}
+                to={link.to}
+                end={link.to === "/"}
+                className={({ isActive }) =>
+                  cn(
+                    "flex items-center rounded-lg px-2.5 py-1.5 text-sm font-medium transition-colors",
+                    isActive
+                      ? "text-foreground"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground dark:hover:bg-muted/50"
+                  )
+                }
+              >
+                {({ isActive }) => (
+                  <span
+                    className={cn(
+                      "flex items-center gap-1.5 border-b-2 pb-0.5",
+                      isActive ? "border-primary" : "border-transparent"
+                    )}
+                  >
+                    <link.icon className="size-4" />
+                    {link.label}
+                  </span>
+                )}
+              </NavLink>
             ))}
           </nav>
         )}
