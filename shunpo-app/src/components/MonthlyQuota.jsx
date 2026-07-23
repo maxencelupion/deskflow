@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/context/useAuth'
 import { fetchMonthlyUsedHours } from '@/lib/bookings'
+import { getCurrentMonthRange } from '@/lib/dates'
 import { cn } from '@/lib/utils'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
@@ -37,7 +38,8 @@ export function MonthlyQuota() {
     danger: "bg-destructive",
   }[severity]
 
-  const daysLeftUntilNextMonth = Math.ceil((new Date().setMonth(new Date().getMonth() + 1, 1) - new Date()) / (1000 * 3600 * 24));
+  const { startOfNextMonth } = getCurrentMonthRange()
+  const daysLeftUntilNextMonth = Math.ceil((startOfNextMonth - new Date()) / (1000 * 3600 * 24))
   const resetText = daysLeftUntilNextMonth > 0 ? `in ${daysLeftUntilNextMonth} day${daysLeftUntilNextMonth > 1 ? 's' : ''}` : "today"
 
   return (

@@ -2,48 +2,27 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/context/useAuth'
 import { supabase } from '@/lib/supabase'
+import { cn } from '@/lib/utils'
+import { fetchMonthlyUsedHours, fetchResourceBookings, createBooking } from '@/lib/bookings'
 import {
-  getCurrentMonthRange,
-  fetchMonthlyUsedHours,
+  lastDayOfCurrentMonth,
   getDayOfWeek,
   toDateInputValue,
   combineDateAndTime,
   toTimeOfDay,
-  createBooking,
-} from '@/lib/bookings'
+  toTimeInputValue,
+  generateHourlySlots,
+  formatDateTime,
+} from '@/lib/dates'
 import { Button } from '@/components/ui/button'
+import { Calendar } from '@/components/ui/calendar'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Field, FieldLabel, FieldDescription, FieldGroup } from '@/components/ui/field'
+import { Field, FieldLabel, FieldDescription, FieldError, FieldGroup } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
-const endDateFormatter = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
-const endTimeFormatter = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit' })
-
-function lastDayOfCurrentMonth() {
-  const { startOfNextMonth } = getCurrentMonthRange()
-  return toDateInputValue(new Date(startOfNextMonth.getTime() - 1))
-}
-
-function toTimeInputValue(time) {
-  return time?.slice(0, 5)
-}
-
-function generateHourlySlots(opensAt, closesAt) {
-  const [openH, openM] = toTimeInputValue(opensAt).split(':').map(Number)
-  const [closeH, closeM] = toTimeInputValue(closesAt).split(':').map(Number)
-  const openMinutes = openH * 60 + openM
-  const closeMinutes = closeH * 60 + closeM
-
-  const slots = []
-  for (let minutes = openMinutes; minutes < closeMinutes; minutes += 60) {
-    const h = String(Math.floor(minutes / 60)).padStart(2, '0')
-    const m = String(minutes % 60).padStart(2, '0')
-    slots.push(`${h}:${m}`)
-  }
-  return slots
-}
+const SELECT_CLASSNAME = "h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40"
 
 export default function Book() {
   const { profile } = useAuth()
@@ -54,12 +33,18 @@ export default function Book() {
   const [resources, setResources] = useState([])
   const [resourceId, setResourceId] = useState('')
   const [weeklyHours, setWeeklyHours] = useState([])
-  const [date, setDate] = useState(toDateInputValue(new Date()))
+  const [date, setDate] = useState('')
   const [startTime, setStartTime] = useState('')
   const [hours, setHours] = useState('')
+  const [dayBookings, setDayBookings] = useState([])
   const [usedHours, setUsedHours] = useState(null)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
+
+  function resetTimeSelection() {
+    setStartTime('')
+    setHours('')
+  }
 
   useEffect(() => {
     async function loadSites() {
@@ -114,8 +99,29 @@ export default function Book() {
     loadSiteDetails()
   }, [siteId])
 
-  const dayOfWeek = getDayOfWeek(date)
-  const hoursForDay = weeklyHours.find((h) => h.day_of_week === dayOfWeek)
+  useEffect(() => {
+    if (!resourceId || !date) {
+      return
+    }
+
+    const rangeStart = combineDateAndTime(date, '00:00')
+    const rangeEnd = new Date(rangeStart.getTime() + 24 * 3600000)
+
+    fetchResourceBookings({ resourceId, rangeStart, rangeEnd })
+      .then(setDayBookings)
+      .catch((fetchError) => console.error('Error loading availability:', fetchError))
+  }, [resourceId, date])
+
+  function findHoursForDay(dayOfWeek) {
+    return weeklyHours.find((h) => h.day_of_week === dayOfWeek)
+  }
+
+  function isDayClosed(hoursForThatDay) {
+    return Boolean(hoursForThatDay?.is_closed) || (weeklyHours.length > 0 && !hoursForThatDay)
+  }
+
+  const dayOfWeek = date ? getDayOfWeek(date) : null
+  const hoursForDay = findHoursForDay(dayOfWeek)
   const timeSlots = hoursForDay && !hoursForDay.is_closed
     ? generateHourlySlots(hoursForDay.opens_at, hoursForDay.closes_at)
     : []
@@ -125,8 +131,8 @@ export default function Book() {
   const end = start && hoursNum > 0 ? new Date(start.getTime() + hoursNum * 3600000) : null
   const remaining = usedHours !== null ? (profile?.monthly_quota_hours ?? 0) - usedHours : null
 
-  const siteClosed = Boolean(hoursForDay?.is_closed) || (weeklyHours.length > 0 && !hoursForDay)
-  const sameDayEnd = Boolean(end && end.getFullYear() === start.getFullYear() && end.getMonth() === start.getMonth() && end.getDate() === start.getDate())
+  const siteClosed = Boolean(date) && isDayClosed(hoursForDay)
+  const sameDayEnd = Boolean(end) && toDateInputValue(end) === date
 
   const outsideOpeningHours = Boolean(
     hoursForDay && !hoursForDay.is_closed && start && end &&
@@ -138,6 +144,46 @@ export default function Book() {
     siteId && resourceId && startTime && hoursNum > 0 && !hoursNotInteger &&
     !siteClosed && !outsideOpeningHours && !exceedsQuota
   )
+
+  const resourceCapacity = resources.find((r) => r.id === resourceId)?.capacity ?? 1
+
+  function seatsBookedDuring(segmentStart, segmentEnd) {
+    return dayBookings.filter((b) => new Date(b.start_at) < segmentEnd && new Date(b.end_at) > segmentStart).length
+  }
+
+  // A slot is bookable if every hour of the requested duration still has a free seat
+  function isSlotBookable(slot) {
+    const duration = hoursNum > 0 ? Math.ceil(hoursNum) : 1
+    const slotStart = combineDateAndTime(date, slot)
+
+    return Array.from({ length: duration }, (_, i) => i).every((i) => {
+      const segmentStart = new Date(slotStart.getTime() + i * 3600000)
+      const segmentEnd = new Date(segmentStart.getTime() + 3600000)
+      return seatsBookedDuring(segmentStart, segmentEnd) < resourceCapacity
+    })
+  }
+
+  const todayStr = toDateInputValue(new Date())
+  const maxDateStr = lastDayOfCurrentMonth()
+
+  const showResourceField = Boolean(siteId)
+  const showDateField = showResourceField && Boolean(resourceId)
+  const showStartTimeField = showDateField && Boolean(date)
+  const showHoursField = showStartTimeField && Boolean(startTime)
+  const showEndField = showHoursField && hoursNum > 0
+
+  function isClosedWeekday(day) {
+    return isDayClosed(findHoursForDay(day.getDay()))
+  }
+
+  function isDateDisabled(day) {
+    const dayStr = toDateInputValue(day)
+    if (dayStr < todayStr || dayStr > maxDateStr) {
+      return true
+    }
+
+    return isClosedWeekday(day)
+  }
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -172,7 +218,7 @@ export default function Book() {
     <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 p-4 md:p-10">
       <h1 className="text-2xl font-semibold">New booking</h1>
 
-      <Card className="max-w-md">
+      <Card className="max-w-xl">
         <CardHeader>
           <CardTitle>Book a resource</CardTitle>
         </CardHeader>
@@ -183,9 +229,9 @@ export default function Book() {
                 <FieldLabel htmlFor="site">Site</FieldLabel>
                 <select
                   id="site"
-                  className={"h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40"}
+                  className={SELECT_CLASSNAME}
                   value={siteId}
-                  onChange={(e) => { setSiteId(e.target.value); setStartTime('') }}
+                  onChange={(e) => { setSiteId(e.target.value); resetTimeSelection() }}
                   required
                 >
                   <option value="" disabled>Select a site</option>
@@ -195,68 +241,97 @@ export default function Book() {
                 </select>
               </Field>
 
-              <Field>
-                <FieldLabel htmlFor="resource">Resource</FieldLabel>
-                <select
-                  id="resource"
-                  className={"h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40"}
-                  value={resourceId}
-                  onChange={(e) => setResourceId(e.target.value)}
-                  disabled={!siteId}
-                  required
-                >
-                  <option value="" disabled>Select a resource</option>
-                  {resources.map((resource) => (
-                    <option key={resource.id} value={resource.id}>
-                      {resource.name} ({resource.type}, capacity {resource.capacity})
-                    </option>
-                  ))}
-                </select>
-              </Field>
-
-              <Field>
-                <FieldLabel htmlFor="date">Date</FieldLabel>
-                <Input
-                  id="date"
-                  type="date"
-                  value={date}
-                  min={toDateInputValue(new Date())}
-                  max={lastDayOfCurrentMonth()}
-                  onChange={(e) => { setDate(e.target.value); setStartTime('') }}
-                  required
-                />
-                {siteClosed && siteId && (
-                  <FieldDescription className="text-red-500">
-                    This site is closed on {DAY_NAMES[dayOfWeek]}.
-                  </FieldDescription>
-                )}
-                {!siteClosed && hoursForDay && (
-                  <FieldDescription>
-                    Open {toTimeInputValue(hoursForDay.opens_at)}–{toTimeInputValue(hoursForDay.closes_at)} on {DAY_NAMES[dayOfWeek]}.
-                  </FieldDescription>
-                )}
-              </Field>
-
-              <Field orientation="horizontal">
-                <div className="flex w-full flex-col gap-2">
-                  <FieldLabel htmlFor="startTime">Start time</FieldLabel>
+              {showResourceField && (
+                <Field>
+                  <FieldLabel htmlFor="resource">Resource</FieldLabel>
                   <select
-                    id="startTime"
-                    className={"h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40"}
-                    value={startTime}
-                    onChange={(e) => setStartTime(e.target.value)}
-                    disabled={siteClosed || timeSlots.length === 0}
+                    id="resource"
+                    className={SELECT_CLASSNAME}
+                    value={resourceId}
+                    onChange={(e) => { setResourceId(e.target.value); resetTimeSelection() }}
                     required
                   >
-                    <option value="" disabled>
-                      {siteClosed ? 'Site is closed' : 'Select a time'}
-                    </option>
-                    {timeSlots.map((slot) => (
-                      <option key={slot} value={slot}>{slot}</option>
+                    <option value="" disabled>Select a resource</option>
+                    {resources.map((resource) => (
+                      <option key={resource.id} value={resource.id}>
+                        {resource.name} ({resource.type}, capacity {resource.capacity})
+                      </option>
                     ))}
                   </select>
-                </div>
-                <div className="flex w-full flex-col gap-2">
+                </Field>
+              )}
+
+              {showDateField && (
+                <Field>
+                  <FieldLabel htmlFor="date">Date</FieldLabel>
+                  <Calendar
+                    id="date"
+                    mode="single"
+                    selected={date ? combineDateAndTime(date, '00:00') : undefined}
+                    onSelect={(day) => {
+                      if (!day) return
+                      setDate(toDateInputValue(day))
+                      resetTimeSelection()
+                    }}
+                    startMonth={new Date()}
+                    endMonth={combineDateAndTime(maxDateStr, '00:00')}
+                    hideNavigation
+                    disabled={isDateDisabled}
+                    modifiers={{ closed: isClosedWeekday }}
+                    modifiersClassNames={{ closed: 'text-red-500!' }}
+                    className="w-fit rounded-lg border p-2"
+                  />
+                  {siteClosed && (
+                    <FieldError>This site is closed on {DAY_NAMES[dayOfWeek]}.</FieldError>
+                  )}
+                  {!siteClosed && hoursForDay && (
+                    <FieldDescription>
+                      Open {toTimeInputValue(hoursForDay.opens_at)}–{toTimeInputValue(hoursForDay.closes_at)} on {DAY_NAMES[dayOfWeek]}.
+                    </FieldDescription>
+                  )}
+                </Field>
+              )}
+
+              {showStartTimeField && (
+                <Field>
+                  <FieldLabel htmlFor="startTime">Start time</FieldLabel>
+                  {siteClosed && (
+                    <FieldError>Site is closed on {DAY_NAMES[dayOfWeek]}.</FieldError>
+                  )}
+                  {!siteClosed && timeSlots.length === 0 && (
+                    <FieldDescription>No slots available for this day.</FieldDescription>
+                  )}
+                  {!siteClosed && timeSlots.length > 0 && (
+                    <div id="startTime" className="grid grid-cols-4 gap-2 sm:grid-cols-6">
+                      {timeSlots.map((slot) => {
+                        const bookable = isSlotBookable(slot)
+
+                        return (
+                          <button
+                            key={slot}
+                            type="button"
+                            onClick={() => setStartTime(slot)}
+                            disabled={!bookable}
+                            aria-pressed={startTime === slot}
+                            className={cn(
+                              "rounded-lg border px-1.5 py-1 text-sm transition-colors",
+                              startTime === slot
+                                ? "border-primary bg-primary text-primary-foreground"
+                                : "border-input bg-transparent hover:bg-muted",
+                              !bookable && "cursor-not-allowed border-input/50 text-muted-foreground opacity-50 line-through hover:bg-transparent"
+                            )}
+                          >
+                            {slot}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )}
+                </Field>
+              )}
+
+              {showHoursField && (
+                <Field>
                   <FieldLabel htmlFor="hours">Hours</FieldLabel>
                   <Input
                     id="hours"
@@ -269,42 +344,38 @@ export default function Book() {
                     aria-invalid={exceedsQuota || hoursNotInteger}
                     required
                   />
-                </div>
-              </Field>
+                </Field>
+              )}
 
-              <Field>
-                <FieldLabel htmlFor="end">Estimated end</FieldLabel>
-                <Input
-                  id="end"
-                  readOnly
-                  disabled
-                  value={end ? `${endDateFormatter.format(end)}, ${endTimeFormatter.format(end)}` : ''}
-                />
-              </Field>
+              {showEndField && (
+                <Field>
+                  <FieldLabel htmlFor="end">Estimated end</FieldLabel>
+                  <Input
+                    id="end"
+                    readOnly
+                    disabled
+                    value={end ? formatDateTime(end) : ''}
+                  />
+                </Field>
+              )}
 
               {hoursNotInteger && (
-                <FieldDescription className="text-red-500">
-                  Duration must be a whole number of hours.
-                </FieldDescription>
+                <FieldError>Duration must be a whole number of hours.</FieldError>
               )}
               {outsideOpeningHours && (
-                <FieldDescription className="text-red-500">
-                  This booking would fall outside opening hours.
-                </FieldDescription>
+                <FieldError>This booking would fall outside opening hours.</FieldError>
               )}
               {exceedsQuota && (
-                <FieldDescription className="text-red-500">
-                  This would exceed your remaining quota this month.
-                </FieldDescription>
+                <FieldError>This would exceed your remaining quota this month.</FieldError>
               )}
               {hoursNum > 0 && !exceedsQuota && remaining !== null && (
                 <FieldDescription>
-                  This booking will use {hoursNum}h — {remaining}h remaining this month.
+                  This booking will use {hoursNum}h - {remaining}h remaining this month.
                 </FieldDescription>
               )}
 
               {error && (
-                <p className="text-sm text-red-500 text-center">{error}</p>
+                <FieldError className="text-center">{error}</FieldError>
               )}
 
               <Field>
