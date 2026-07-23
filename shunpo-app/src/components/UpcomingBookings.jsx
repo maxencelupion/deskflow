@@ -45,8 +45,15 @@ export function UpcomingBookings({ pageSize = 5, onBookingsChanged }) {
   const [bookings, setBookings] = useState([])
   const [totalCount, setTotalCount] = useState(0)
   const [page, setPage] = useState(0)
+  const [prevPageSize, setPrevPageSize] = useState(pageSize)
   const [loading, setLoading] = useState(true)
   const [cancellingId, setCancellingId] = useState(null)
+
+  // Reset to page 0 whenever pageSize changes (e.g. resizing across the mobile breakpoint)
+  if (pageSize !== prevPageSize) {
+    setPrevPageSize(pageSize)
+    setPage(0)
+  }
 
   useEffect(() => {
     if (!profile) {
@@ -72,7 +79,7 @@ export function UpcomingBookings({ pageSize = 5, onBookingsChanged }) {
     const { error } = await supabase
       .from('bookings')
       .update({
-        status: late ? 'cancelled_charged' : 'cancelled_not_charged',
+        status: late ? BOOKING_STATUS.CANCELLED_CHARGED : BOOKING_STATUS.CANCELLED_NOT_CHARGED,
         cancelled_at: new Date().toISOString(),
       })
       .eq('id', booking.id)
