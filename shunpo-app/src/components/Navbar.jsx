@@ -8,7 +8,6 @@ import { useScrollDirection } from "@/hooks/useScrollDirection"
 
 const NAV_LINKS = [
   { to: "/", label: "Dashboard" },
-  { to: "/book", label: "Book" },
 ]
 
 export function Navbar() {

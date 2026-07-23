@@ -3,7 +3,8 @@ import { useAuth } from '@/context/useAuth'
 import { supabase } from '@/lib/supabase'
 import { formatBookingRange } from '@/lib/dates'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { NewBookingDialog } from '@/components/NewBookingDialog'
 
 // 24 hours in milliseconds
 const LATE_CANCELLATION_WINDOW_MS = 24 * 60 * 60 * 1000
@@ -38,7 +39,7 @@ async function fetchBookings(userId, page, pageSize, setBookings, setTotalCount,
   setLoading(false)
 }
 
-export function UpcomingBookings({ pageSize = 5, onCancelled }) {
+export function UpcomingBookings({ pageSize = 5, onBookingsChanged }) {
   const { profile } = useAuth()
   const [bookings, setBookings] = useState([])
   const [totalCount, setTotalCount] = useState(0)
@@ -79,11 +80,15 @@ export function UpcomingBookings({ pageSize = 5, onCancelled }) {
       console.error('Error cancelling booking:', error)
     } else {
       await fetchBookings(profile.id, page, pageSize, setBookings, setTotalCount, setLoading)
-      // Call the onCancelled callback to trigger a quota refresh
-      onCancelled?.()
+      onBookingsChanged?.()
     }
 
     setCancellingId(null)
+  }
+
+  function handleBooked() {
+    fetchBookings(profile.id, page, pageSize, setBookings, setTotalCount, setLoading)
+    onBookingsChanged?.()
   }
 
   const totalPages = Math.max(Math.ceil(totalCount / pageSize), 1)
@@ -92,6 +97,9 @@ export function UpcomingBookings({ pageSize = 5, onCancelled }) {
     <Card>
       <CardHeader>
         <CardTitle>Upcoming bookings</CardTitle>
+        <CardAction>
+          <NewBookingDialog onBooked={handleBooked} />
+        </CardAction>
       </CardHeader>
       <CardContent>
         {loading ? (

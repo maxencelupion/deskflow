@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useAuth } from '@/context/useAuth'
 import { MonthlyQuota } from '@/components/MonthlyQuota'
 import { UpcomingBookings } from '@/components/UpcomingBookings'
+import { ManageResources } from '@/components/ManageResources'
+import { SiteBookings } from '@/components/SiteBookings'
 
 export default function Dashboard() {
   const { profile } = useAuth()
@@ -12,7 +14,14 @@ export default function Dashboard() {
       {profile?.role === 'member' && (
         <div className="grid grid-cols-2 gap-6">
           <MonthlyQuota refreshKey={quotaRefreshKey} />
-          <UpcomingBookings pageSize={5} onCancelled={() => setQuotaRefreshKey((k) => k + 1)} />
+          <UpcomingBookings pageSize={5} onBookingsChanged={() => setQuotaRefreshKey((k) => k + 1)} />
+        </div>
+      )}
+
+      {profile?.role === 'manager' && (
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <ManageResources />
+          <SiteBookings />
         </div>
       )}
     </div>
