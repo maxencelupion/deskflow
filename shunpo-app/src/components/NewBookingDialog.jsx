@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/context/useAuth'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
@@ -16,7 +15,7 @@ import {
 } from '@/lib/dates'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Field, FieldLabel, FieldDescription, FieldError, FieldGroup } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 
@@ -24,10 +23,10 @@ const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Frid
 
 const SELECT_CLASSNAME = "h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40"
 
-export default function Book() {
+export function NewBookingDialog({ onBooked }) {
   const { profile } = useAuth()
-  const navigate = useNavigate()
 
+  const [open, setOpen] = useState(false)
   const [sites, setSites] = useState([])
   const [siteId, setSiteId] = useState('')
   const [resources, setResources] = useState([])
@@ -46,6 +45,16 @@ export default function Book() {
     setHours('')
   }
 
+  function openDialog() {
+    setSiteId('')
+    setResourceId('')
+    setDate('')
+    setStartTime('')
+    setHours('')
+    setError(null)
+    setOpen(true)
+  }
+
   useEffect(() => {
     async function loadSites() {
       const { data, error } = await supabase.from('sites').select('id, name').order('name')
@@ -61,14 +70,14 @@ export default function Book() {
   }, [])
 
   useEffect(() => {
-    if (!profile) {
+    if (!profile || !open) {
       return
     }
 
     fetchMonthlyUsedHours(profile.id)
       .then(setUsedHours)
       .catch((fetchError) => console.error('Error loading monthly usage:', fetchError))
-  }, [profile])
+  }, [profile, open])
 
   useEffect(() => {
     if (!siteId) {
@@ -210,19 +219,24 @@ export default function Book() {
       }
       setSubmitting(false)
     } else {
-      navigate('/')
+      setSubmitting(false)
+      setOpen(false)
+      onBooked?.()
     }
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 p-4 md:p-10">
-      <h1 className="text-2xl font-semibold">New booking</h1>
+    <>
+      <Button type="button" size="sm" onClick={openDialog}>
+        New booking
+      </Button>
 
-      <Card className="max-w-xl">
-        <CardHeader>
-          <CardTitle>Book a resource</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>New booking</DialogTitle>
+          </DialogHeader>
+
           <form onSubmit={handleSubmit}>
             <FieldGroup>
               <Field>
@@ -279,7 +293,7 @@ export default function Book() {
                     disabled={isDateDisabled}
                     modifiers={{ closed: isClosedWeekday }}
                     modifiersClassNames={{ closed: 'text-red-500!' }}
-                    className="w-fit rounded-lg border p-2"
+                    className="w-fit rounded-lg border p-2 [--cell-size:--spacing(6)]"
                   />
                   {siteClosed && (
                     <FieldError>This site is closed on {DAY_NAMES[dayOfWeek]}.</FieldError>
@@ -378,15 +392,15 @@ export default function Book() {
                 <FieldError className="text-center">{error}</FieldError>
               )}
 
-              <Field>
+              <DialogFooter>
                 <Button type="submit" disabled={!canSubmit || submitting}>
                   {submitting ? "..." : "Confirm booking"}
                 </Button>
-              </Field>
+              </DialogFooter>
             </FieldGroup>
           </form>
-        </CardContent>
-      </Card>
-    </div>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }
