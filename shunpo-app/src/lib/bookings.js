@@ -1,6 +1,19 @@
 import { supabase } from '@/lib/supabase'
 import { getCurrentMonthRange } from '@/lib/dates'
 
+// Mirrors the booking_status enum in supabase/migrations/20260721131256_schema_init.sql
+export const BOOKING_STATUS = {
+  CONFIRMED: 'confirmed',
+  CANCELLED_NOT_CHARGED: 'cancelled_not_charged',
+  CANCELLED_CHARGED: 'cancelled_charged',
+}
+
+export const BOOKING_STATUS_LABELS = {
+  [BOOKING_STATUS.CONFIRMED]: 'Confirmed',
+  [BOOKING_STATUS.CANCELLED_NOT_CHARGED]: 'Cancelled',
+  [BOOKING_STATUS.CANCELLED_CHARGED]: 'Cancelled but charged',
+}
+
 export async function fetchMonthlyUsedHours(userId) {
   const { startOfMonth, startOfNextMonth } = getCurrentMonthRange()
 
@@ -8,7 +21,7 @@ export async function fetchMonthlyUsedHours(userId) {
     .from('bookings')
     .select('hours_charged')
     .eq('user_id', userId)
-    .in('status', ['confirmed', 'cancelled_charged'])
+    .in('status', [BOOKING_STATUS.CONFIRMED, BOOKING_STATUS.CANCELLED_CHARGED])
     .gte('start_at', startOfMonth.toISOString())
     .lt('start_at', startOfNextMonth.toISOString())
 

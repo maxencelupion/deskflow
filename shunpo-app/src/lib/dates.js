@@ -66,5 +66,5 @@ export function formatBookingRange(startAt, endAt) {
   const start = new Date(startAt)
   const end = new Date(endAt)
 
-  return `${shortDateFormatter.format(start)} · ${timeFormatter.format(start)}–${timeFormatter.format(end)}`
+  return `${shortDateFormatter.format(start)}, ${timeFormatter.format(start)}-${timeFormatter.format(end)}`
 }

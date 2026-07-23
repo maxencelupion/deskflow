@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/context/useAuth'
 import { supabase } from '@/lib/supabase'
+import { BOOKING_STATUS } from '@/lib/bookings'
 import { formatBookingRange } from '@/lib/dates'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -24,7 +25,7 @@ async function fetchBookings(userId, page, pageSize, setBookings, setTotalCount,
     .from('bookings')
     .select('id, start_at, end_at, hours_charged, seat_number, resources(name, sites(name))', { count: 'exact' })
     .eq('user_id', userId)
-    .eq('status', 'confirmed')
+    .eq('status', BOOKING_STATUS.CONFIRMED)
     .gte('start_at', new Date().toISOString())
     .order('start_at', { ascending: true })
     .range(from, to)
