@@ -39,6 +39,7 @@ export function NewBookingDialog({ onBooked }) {
   const [usedHours, setUsedHours] = useState(null)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
+  const [now, setNow] = useState(() => Date.now())
 
   function resetTimeSelection() {
     setStartTime('')
@@ -52,6 +53,7 @@ export function NewBookingDialog({ onBooked }) {
     setStartTime('')
     setHours('')
     setError(null)
+    setNow(Date.now())
     setOpen(true)
   }
 
@@ -129,10 +131,14 @@ export function NewBookingDialog({ onBooked }) {
     return Boolean(hoursForThatDay?.is_closed) || (weeklyHours.length > 0 && !hoursForThatDay)
   }
 
+  const todayStr = toDateInputValue(new Date())
+  const isToday = date === todayStr
+
   const dayOfWeek = date ? getDayOfWeek(date) : null
   const hoursForDay = findHoursForDay(dayOfWeek)
   const timeSlots = hoursForDay && !hoursForDay.is_closed
     ? generateHourlySlots(hoursForDay.opens_at, hoursForDay.closes_at)
+      .filter((slot) => !isToday || combineDateAndTime(date, slot).getTime() > now)
     : []
   const start = startTime ? combineDateAndTime(date, startTime) : null
   const hoursNum = parseFloat(hours) || 0
@@ -172,7 +178,6 @@ export function NewBookingDialog({ onBooked }) {
     })
   }
 
-  const todayStr = toDateInputValue(new Date())
   const maxDateStr = lastDayOfCurrentMonth()
 
   const showResourceField = Boolean(siteId)
@@ -286,6 +291,7 @@ export function NewBookingDialog({ onBooked }) {
                       if (!day) return
                       setDate(toDateInputValue(day))
                       resetTimeSelection()
+                      setNow(Date.now())
                     }}
                     startMonth={new Date()}
                     endMonth={combineDateAndTime(maxDateStr, '00:00')}
