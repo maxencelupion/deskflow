@@ -28,7 +28,7 @@ function buildFullWeek(existingRows) {
   })
 }
 
-export function ManageSites({ pageSize = 5 }) {
+export function ManageSites({ pageSize = 5, onSiteAdded }) {
   const [sites, setSites] = useState([])
   const [open, setOpen] = useState(false)
   const [form, setForm] = useState(emptyForm)
@@ -153,6 +153,11 @@ export function ManageSites({ pageSize = 5 }) {
     }
 
     refetch()
+
+    if (!editing) {
+      onSiteAdded()
+    }
+
     setOpen(false)
     setForm(emptyForm)
     setWeek([])
