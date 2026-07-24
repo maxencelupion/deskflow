@@ -29,3 +29,7 @@ Remplir les variables d'environnement dans le fichier `.env.local` avec l'url Su
 
 # Démo déployée
 Lien de la démo déployée avec Vercel: https://deskflow-phi.vercel.app/
+
+# Annexes
+- `database_schema_init.png` premier jet de la base de données avant implémentation
+- Thème couleur utilisé récupéré depuis https://coolors.co/palette/01161e-124559-598392-aec3b0-eff6e0
