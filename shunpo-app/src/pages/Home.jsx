@@ -94,19 +94,19 @@ export default function Home() {
         <div className="border-t border-home-border pt-8">
           <div className="grid grid-cols-3 gap-8 sm:max-w-2xl">
             <div className="text-left">
-              <div className="font-heading text-4xl font-semibold">
+              <div className="font-heading text-6xl font-semibold">
                 {statsLoading ? '—' : (sites ?? '—')}
               </div>
               <div className="text-sm text-home-muted">sites</div>
             </div>
             <div className="text-left">
-              <div className="font-heading text-4xl font-semibold">
+              <div className="font-heading text-6xl font-semibold">
                 {statsLoading ? '—' : (offices ?? '—')}
               </div>
               <div className="text-sm text-home-muted">offices available</div>
             </div>
             <div className="text-left">
-              <div className="font-heading text-4xl font-semibold">
+              <div className="font-heading text-6xl font-semibold">
                 {statsLoading ? '—' : (rooms ?? '—')}
               </div>
               <div className="text-sm text-home-muted">rooms available</div>
