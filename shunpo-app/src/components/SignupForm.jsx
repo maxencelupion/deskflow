@@ -79,7 +79,7 @@ export function SignupForm({ emailRef, onSwitchToLogin }) {
                 onChange={handleEmailChange}
                 required
                 aria-invalid={emailInvalid}
-                className="border-home-border bg-white text-home-ink placeholder:text-home-muted-3 focus-visible:border-home-ink focus-visible:ring-home-border"
+                className="border-home-border bg-home-card text-home-ink placeholder:text-home-muted-3 focus-visible:border-home-ink focus-visible:ring-home-border"
               />
               {emailInvalid && (
                 <FieldDescription className="text-red-500">
@@ -99,7 +99,7 @@ export function SignupForm({ emailRef, onSwitchToLogin }) {
                   required
                   minLength={6}
                   aria-invalid={passwordTooShort}
-                  className="border-home-border bg-white pr-8 text-home-ink placeholder:text-home-muted-3 focus-visible:border-home-ink focus-visible:ring-home-border"
+                  className="border-home-border bg-home-card pr-8 text-home-ink placeholder:text-home-muted-3 focus-visible:border-home-ink focus-visible:ring-home-border"
                 />
                 <button
                   type="button"
@@ -129,7 +129,7 @@ export function SignupForm({ emailRef, onSwitchToLogin }) {
                   required
                   minLength={6}
                   aria-invalid={passwordMismatch}
-                  className="border-home-border bg-white pr-8 text-home-ink placeholder:text-home-muted-3 focus-visible:border-home-ink focus-visible:ring-home-border"
+                  className="border-home-border bg-home-card pr-8 text-home-ink placeholder:text-home-muted-3 focus-visible:border-home-ink focus-visible:ring-home-border"
                 />
                 <button
                   type="button"
