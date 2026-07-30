@@ -56,7 +56,6 @@ export function generateHourlySlots(opensAt, closesAt) {
   return slots
 }
 
-const shortDateFormatter = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' })
 const weekdayDateFormatter = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
 const timeFormatter = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
 const shortMonthFormatter = new Intl.DateTimeFormat('en-US', { month: 'short' })
@@ -65,13 +64,6 @@ const greetingDateFormatter = new Intl.DateTimeFormat('en-US', { weekday: 'long'
 
 export function formatDateTime(date) {
   return `${weekdayDateFormatter.format(date)}, ${timeFormatter.format(date)}`
-}
-
-export function formatBookingRange(startAt, endAt) {
-  const start = new Date(startAt)
-  const end = new Date(endAt)
-
-  return `${shortDateFormatter.format(start)}, ${timeFormatter.format(start)}-${timeFormatter.format(end)}`
 }
 
 export function formatTimeRange(startAt, endAt) {
