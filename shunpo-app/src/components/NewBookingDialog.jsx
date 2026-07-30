@@ -412,7 +412,7 @@ export function NewBookingDialog({ onBooked }) {
               )}
               {showEndField && !exceedsQuota && remaining !== null && (
                 <FieldDescription className="text-home-muted">
-                  This booking will use {hoursNum}h - {remaining}h remaining this month.
+                  This booking will use {hoursNum} hour{hoursNum > 1 ? 's' : ''} - {remaining} hour{remaining > 1 ? 's' : ''} remaining this month.
                 </FieldDescription>
               )}
 
