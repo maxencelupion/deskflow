@@ -28,8 +28,16 @@ export function usePaginatedQuery(fetchPage, deps, pageSize) {
         return
       }
 
-      setTotalCount(result?.count ?? 0)
+      const count = result?.count ?? 0
+      setTotalCount(count)
       setLoadedKey(fetchKey)
+
+      // If the current page emptied out (e.g. the last item on it was deleted/cancelled),
+      // step back to the new last page instead of stranding the user on an empty one.
+      const newTotalPages = Math.max(Math.ceil(count / pageSize), 1)
+      if (page > 0 && page >= newTotalPages) {
+        setPage(newTotalPages - 1)
+      }
     })
 
     return () => {
