@@ -15,12 +15,20 @@ import {
   formatDateTime,
 } from '@/lib/dates'
 import { Calendar } from '@/components/ui/calendar'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { DialogSubmitFooter } from '@/components/ui/dialog-submit-footer'
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Field, FieldLabel, FieldDescription, FieldError, FieldGroup } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 
-const SELECT_CLASSNAME = "h-8 w-full min-w-0 rounded-lg border border-input bg-neutral-100 px-2.5 py-1 text-base transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-neutral-200/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-neutral-800 dark:disabled:bg-neutral-800/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40"
+const INPUT_CLASSNAME = "border-home-border bg-home-card text-home-ink placeholder:text-home-muted-3 focus-visible:border-home-ink focus-visible:ring-home-border"
+
+function chipClassName(active) {
+  return cn(
+    "rounded-full border px-4 py-2 text-sm font-medium transition-colors",
+    active
+      ? "border-home-ink bg-home-ink text-home-bg"
+      : "border-home-border bg-home-card text-home-ink hover:bg-home-border"
+  )
+}
 
 export function NewBookingDialog({ onBooked }) {
   const { profile } = useAuth()
@@ -243,52 +251,58 @@ export function NewBookingDialog({ onBooked }) {
       </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-h-[85vh] overflow-y-auto rounded-2xl border-none bg-home-bg text-home-ink ring-home-border sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>New booking</DialogTitle>
+            <DialogTitle className="text-home-ink">New booking</DialogTitle>
           </DialogHeader>
 
           <form onSubmit={handleSubmit}>
             <FieldGroup>
               <Field>
-                <FieldLabel htmlFor="site">Site</FieldLabel>
-                <select
-                  id="site"
-                  className={SELECT_CLASSNAME}
-                  value={siteId}
-                  onChange={(e) => { setSiteId(e.target.value); resetTimeSelection() }}
-                  required
-                >
-                  <option value="" disabled>Select a site</option>
+                <FieldLabel className="text-home-ink">Site</FieldLabel>
+                <div className="flex flex-wrap gap-2">
                   {sites.map((site) => (
-                    <option key={site.id} value={site.id}>{site.name}</option>
+                    <button
+                      key={site.id}
+                      type="button"
+                      onClick={() => { setSiteId(site.id); resetTimeSelection() }}
+                      aria-pressed={siteId === site.id}
+                      className={chipClassName(siteId === site.id)}
+                    >
+                      {site.name}
+                    </button>
                   ))}
-                </select>
+                </div>
               </Field>
 
               {showResourceField && (
                 <Field>
-                  <FieldLabel htmlFor="resource">Resource</FieldLabel>
-                  <select
-                    id="resource"
-                    className={SELECT_CLASSNAME}
-                    value={resourceId}
-                    onChange={(e) => { setResourceId(e.target.value); resetTimeSelection() }}
-                    required
-                  >
-                    <option value="" disabled>Select a resource</option>
-                    {resources.map((resource) => (
-                      <option key={resource.id} value={resource.id}>
-                        {resource.name} ({resource.type}, capacity {resource.capacity})
-                      </option>
-                    ))}
-                  </select>
+                  <FieldLabel className="text-home-ink">Resource</FieldLabel>
+                  {resources.length === 0 ? (
+                    <FieldDescription className="text-home-muted">
+                      No resources available for this site.
+                    </FieldDescription>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {resources.map((resource) => (
+                        <button
+                          key={resource.id}
+                          type="button"
+                          onClick={() => { setResourceId(resource.id); resetTimeSelection() }}
+                          aria-pressed={resourceId === resource.id}
+                          className={chipClassName(resourceId === resource.id)}
+                        >
+                          {resource.name} ({resource.type}), cap. {resource.capacity}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </Field>
               )}
 
               {showDateField && (
                 <Field>
-                  <FieldLabel htmlFor="date">Date</FieldLabel>
+                  <FieldLabel htmlFor="date" className="text-home-ink">Date</FieldLabel>
                   <Calendar
                     id="date"
                     mode="single"
@@ -305,13 +319,13 @@ export function NewBookingDialog({ onBooked }) {
                     disabled={isDateDisabled}
                     modifiers={{ closed: isClosedWeekday }}
                     modifiersClassNames={{ closed: 'text-red-500!' }}
-                    className="w-fit rounded-lg border p-2 [--cell-size:--spacing(6)]"
+                    className="w-fit rounded-lg border border-home-border p-2 [--cell-size:--spacing(6)]"
                   />
                   {siteClosed && (
                     <FieldError>This site is closed on {DAY_NAMES[dayOfWeek]}.</FieldError>
                   )}
                   {!siteClosed && hoursForDay && (
-                    <FieldDescription>
+                    <FieldDescription className="text-home-muted">
                       Open {toTimeInputValue(hoursForDay.opens_at)}–{toTimeInputValue(hoursForDay.closes_at)} on {DAY_NAMES[dayOfWeek]}.
                     </FieldDescription>
                   )}
@@ -320,12 +334,12 @@ export function NewBookingDialog({ onBooked }) {
 
               {showStartTimeField && (
                 <Field>
-                  <FieldLabel htmlFor="startTime">Start time</FieldLabel>
+                  <FieldLabel htmlFor="startTime" className="text-home-ink">Start time</FieldLabel>
                   {siteClosed && (
                     <FieldError>Site is closed on {DAY_NAMES[dayOfWeek]}.</FieldError>
                   )}
                   {!siteClosed && timeSlots.length === 0 && (
-                    <FieldDescription>No slots available for this day.</FieldDescription>
+                    <FieldDescription className="text-home-muted">No slots available for this day.</FieldDescription>
                   )}
                   {!siteClosed && timeSlots.length > 0 && (
                     <div id="startTime" className="grid grid-cols-4 gap-2 sm:grid-cols-6">
@@ -342,9 +356,9 @@ export function NewBookingDialog({ onBooked }) {
                             className={cn(
                               "rounded-lg border px-1.5 py-1 text-sm transition-colors",
                               startTime === slot
-                                ? "border-primary bg-primary text-primary-foreground"
-                                : "border-input bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700",
-                              !bookable && "cursor-not-allowed border-input/50 text-muted-foreground opacity-50 line-through hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                                ? "border-home-ink bg-home-ink text-home-bg"
+                                : "border-home-border bg-home-card hover:bg-home-border",
+                              !bookable && "cursor-not-allowed border-home-border/50 text-home-muted-3 opacity-50 line-through hover:bg-home-card"
                             )}
                           >
                             {slot}
@@ -358,7 +372,7 @@ export function NewBookingDialog({ onBooked }) {
 
               {showHoursField && (
                 <Field>
-                  <FieldLabel htmlFor="hours">Hours</FieldLabel>
+                  <FieldLabel htmlFor="hours" className="text-home-ink">Hours</FieldLabel>
                   <Input
                     id="hours"
                     type="number"
@@ -369,18 +383,20 @@ export function NewBookingDialog({ onBooked }) {
                     onChange={(e) => setHours(e.target.value)}
                     aria-invalid={exceedsQuota || hoursNotInteger}
                     required
+                    className={INPUT_CLASSNAME}
                   />
                 </Field>
               )}
 
               {showEndField && (
                 <Field>
-                  <FieldLabel htmlFor="end">Estimated end</FieldLabel>
+                  <FieldLabel htmlFor="end" className="text-home-ink">Estimated end</FieldLabel>
                   <Input
                     id="end"
                     readOnly
                     disabled
                     value={end ? formatDateTime(end) : ''}
+                    className={INPUT_CLASSNAME}
                   />
                 </Field>
               )}
@@ -394,8 +410,8 @@ export function NewBookingDialog({ onBooked }) {
               {exceedsQuota && (
                 <FieldError>This would exceed your remaining quota this month.</FieldError>
               )}
-              {hoursNum > 0 && !exceedsQuota && remaining !== null && (
-                <FieldDescription>
+              {showEndField && !exceedsQuota && remaining !== null && (
+                <FieldDescription className="text-home-muted">
                   This booking will use {hoursNum}h - {remaining}h remaining this month.
                 </FieldDescription>
               )}
@@ -404,7 +420,15 @@ export function NewBookingDialog({ onBooked }) {
                 <FieldError className="text-center">{error}</FieldError>
               )}
 
-              <DialogSubmitFooter submitting={submitting} disabled={!canSubmit} label="Confirm booking" />
+              <DialogFooter>
+                <button
+                  type="submit"
+                  disabled={submitting || !canSubmit}
+                  className="rounded-full bg-home-ink px-5 py-2.5 text-sm font-semibold text-home-bg transition-opacity hover:opacity-80 disabled:opacity-50"
+                >
+                  {submitting ? '...' : 'Confirm booking'}
+                </button>
+              </DialogFooter>
             </FieldGroup>
           </form>
         </DialogContent>
