@@ -138,7 +138,7 @@ export default function UserDashboard() {
         </div>
 
         <div className="mb-8 h-55 w-full overflow-hidden rounded-2xl">
-          <img src="/home_background.jpg" alt="" className="h-full w-full object-cover" />
+          <img src="/user_dashboard.jpg" alt="" className="h-full w-full object-cover" />
         </div>
 
         <div className="mb-10 grid grid-cols-1 gap-5 md:grid-cols-2">
