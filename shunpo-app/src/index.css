@@ -149,6 +149,64 @@
     }
 }
 
+/* Shared classes for the "home" (public/dashboard) design system.
+   Only applied to plain elements — never used to override a shared UI
+   component's own default classes, since Tailwind's utilities layer always
+   wins over this components layer regardless of DOM class order. */
+@layer components {
+  .home-page {
+    @apply flex-1 bg-home-bg text-home-ink;
+  }
+
+  .home-container {
+    @apply mx-auto max-w-300 px-6 py-9 md:px-14;
+  }
+
+  .home-h1 {
+    @apply font-heading text-4xl font-bold tracking-tight md:text-5xl;
+  }
+
+  .home-h1-sm {
+    @apply font-heading text-3xl font-semibold;
+  }
+
+  .home-section-label {
+    @apply text-xs font-semibold tracking-wide text-home-muted uppercase;
+  }
+
+  .home-group-label {
+    @apply text-xs font-semibold tracking-wide text-home-muted-2 uppercase;
+  }
+
+  .home-card {
+    @apply rounded-2xl border border-home-border bg-home-card shadow-[0_4px_16px_-6px_rgba(17,17,17,0.12)];
+  }
+
+  .home-booking-card {
+    @apply flex items-center gap-4 rounded-2xl border border-home-border bg-home-card px-5 py-4 shadow-[0_4px_16px_-8px_rgba(17,17,17,0.12)] transition-shadow hover:shadow-[0_8px_20px_-8px_rgba(17,17,17,0.2)];
+  }
+
+  .home-pill {
+    @apply rounded-full bg-home-ink px-5 py-2.5 text-sm font-semibold text-home-bg transition-opacity hover:opacity-80 disabled:opacity-50;
+  }
+
+  .home-pill-sm {
+    @apply inline-flex items-center gap-1.5 rounded-full bg-home-ink px-4 py-2 text-sm font-semibold text-home-bg transition-opacity hover:opacity-80;
+  }
+
+  .home-pill-outline {
+    @apply rounded-full border border-home-border px-4 py-2 text-[13px] font-medium text-home-ink transition-colors hover:bg-home-border disabled:opacity-50;
+  }
+
+  .home-icon-btn {
+    @apply rounded-full border border-home-border p-1.5 text-home-ink transition-colors hover:bg-home-border;
+  }
+
+  .home-icon-btn-danger {
+    @apply rounded-full border border-home-border p-1.5 text-red-600 transition-colors hover:bg-red-50;
+  }
+}
+
 @keyframes rise {
   from {
     transform: translateY(0);

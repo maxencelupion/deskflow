@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { SquarePen, Trash } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { HOME_DIALOG_CLASSNAME, HOME_INPUT_CLASSNAME } from '@/lib/utils'
 import { usePaginatedQuery } from '@/hooks/usePaginatedQuery'
 import { DAY_NAMES } from '@/lib/dates'
 import { BOOKING_STATUS } from '@/lib/enums'
@@ -13,7 +14,6 @@ import { Spinner } from '@/components/Spinner'
 
 const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/
 
-const INPUT_CLASSNAME = "border-home-border bg-home-card text-home-ink placeholder:text-home-muted-3 focus-visible:border-home-ink focus-visible:ring-home-border"
 
 const emptyForm = { id: null, name: '' }
 
@@ -215,17 +215,17 @@ export function AdminSitesTable({ pageSize = 5, onSiteAdded }) {
   return (
     <div>
       <div className="mb-3.5 flex items-center justify-between gap-3">
-        <h2 className="text-xs font-semibold uppercase tracking-wide text-home-muted">Sites</h2>
+        <h2 className="home-section-label">Sites</h2>
         <button
           type="button"
           onClick={openAddDialog}
-          className="inline-flex items-center gap-1.5 rounded-full bg-home-ink px-4 py-2 text-sm font-semibold text-home-bg transition-opacity hover:opacity-80"
+          className="home-pill-sm"
         >
           Add site
         </button>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-home-border bg-home-card shadow-[0_4px_16px_-6px_rgba(17,17,17,0.12)]">
+      <div className="home-card overflow-hidden">
         {loading ? (
           <div className="flex justify-center px-5 py-6"><Spinner /></div>
         ) : sites.length === 0 ? (
@@ -254,7 +254,7 @@ export function AdminSitesTable({ pageSize = 5, onSiteAdded }) {
                           type="button"
                           aria-label="Edit"
                           onClick={() => openEditDialog(site)}
-                          className="rounded-full border border-home-border p-1.5 text-home-ink transition-colors hover:bg-home-border"
+                          className="home-icon-btn"
                         >
                           <SquarePen className="size-4" />
                         </button>
@@ -262,7 +262,7 @@ export function AdminSitesTable({ pageSize = 5, onSiteAdded }) {
                           type="button"
                           aria-label="Delete"
                           onClick={() => handleDelete(site)}
-                          className="rounded-full border border-home-border p-1.5 text-red-600 transition-colors hover:bg-red-50"
+                          className="home-icon-btn-danger"
                         >
                           <Trash className="size-4" />
                         </button>
@@ -283,7 +283,7 @@ export function AdminSitesTable({ pageSize = 5, onSiteAdded }) {
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-h-[85vh] overflow-y-auto rounded-2xl border-none bg-home-bg text-home-ink ring-home-border sm:max-w-lg">
+        <DialogContent className={`max-h-[85vh] overflow-y-auto sm:max-w-lg ${HOME_DIALOG_CLASSNAME}`}>
           <DialogHeader>
             <DialogTitle className="text-home-ink">{editing ? 'Edit site' : 'New site'}</DialogTitle>
           </DialogHeader>
@@ -298,7 +298,7 @@ export function AdminSitesTable({ pageSize = 5, onSiteAdded }) {
                   value={form.name}
                   onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                   required
-                  className={INPUT_CLASSNAME}
+                  className={HOME_INPUT_CLASSNAME}
                 />
               </Field>
 
@@ -335,7 +335,7 @@ export function AdminSitesTable({ pageSize = 5, onSiteAdded }) {
                                 pattern="([01]\d|2[0-3]):[0-5]\d"
                                 value={day.opens_at}
                                 onChange={(e) => updateDay(i, { opens_at: e.target.value })}
-                                className={`w-20 text-center ${INPUT_CLASSNAME}`}
+                                className={`w-20 text-center ${HOME_INPUT_CLASSNAME}`}
                                 required
                               />
                               <span className="text-home-muted">–</span>
@@ -346,7 +346,7 @@ export function AdminSitesTable({ pageSize = 5, onSiteAdded }) {
                                 pattern="([01]\d|2[0-3]):[0-5]\d"
                                 value={day.closes_at}
                                 onChange={(e) => updateDay(i, { closes_at: e.target.value })}
-                                className={`w-20 text-center ${INPUT_CLASSNAME}`}
+                                className={`w-20 text-center ${HOME_INPUT_CLASSNAME}`}
                                 required
                               />
                             </div>
@@ -364,7 +364,7 @@ export function AdminSitesTable({ pageSize = 5, onSiteAdded }) {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="rounded-full bg-home-ink px-5 py-2.5 text-sm font-semibold text-home-bg transition-opacity hover:opacity-80 disabled:opacity-50"
+                  className="home-pill"
                 >
                   {submitting ? '...' : editing ? 'Save changes' : 'Add site'}
                 </button>

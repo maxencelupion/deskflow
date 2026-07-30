@@ -2,6 +2,7 @@ import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Eye, EyeOff } from "lucide-react"
 import { supabase } from "@/lib/supabase"
+import { HOME_INPUT_CLASSNAME } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -68,7 +69,7 @@ export function LoginForm({ emailRef, onSwitchToSignup }) {
                 ref={(node) => { if (node) node.value = emailRef.current }}
                 onChange={handleEmailChange}
                 required
-                className="border-home-border bg-home-card text-home-ink placeholder:text-home-muted-3 focus-visible:border-home-ink focus-visible:ring-home-border"
+                className={HOME_INPUT_CLASSNAME}
               />
             </Field>
 
@@ -82,7 +83,7 @@ export function LoginForm({ emailRef, onSwitchToSignup }) {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={6}
-                  className="border-home-border bg-home-card pr-8 text-home-ink placeholder:text-home-muted-3 focus-visible:border-home-ink focus-visible:ring-home-border"
+                  className={`pr-8 ${HOME_INPUT_CLASSNAME}`}
                 />
                 <button
                   type="button"

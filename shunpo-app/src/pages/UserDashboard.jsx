@@ -129,11 +129,11 @@ export default function UserDashboard() {
   const resetText = daysUntilReset <= 0 ? 'today' : daysUntilReset === 1 ? 'in 1 day' : `in ${daysUntilReset} days`
 
   return (
-    <div className="flex-1 bg-home-bg text-home-ink">
-      <div className="mx-auto max-w-300 px-6 py-9 md:px-14">
+    <div className="home-page">
+      <div className="home-container">
         <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h1 className="font-heading text-3xl font-semibold">{formatGreetingDate()}</h1>
+            <h1 className="home-h1-sm">{formatGreetingDate()}</h1>
             <p className="mt-1 text-sm text-home-muted">Book your next rooms and offices for this month.</p>
           </div>
           <NewBookingDialog onBooked={handleDataChanged} />

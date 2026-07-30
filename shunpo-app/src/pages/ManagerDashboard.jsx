@@ -7,10 +7,10 @@ export default function ManagerDashboard() {
   const pageSize = usePageSize()
 
   return (
-    <div className="flex-1 bg-home-bg text-home-ink">
-      <div className="mx-auto max-w-300 px-6 py-9 md:px-14">
+    <div className="home-page">
+      <div className="home-container">
         <div className="mb-8">
-          <h1 className="font-heading text-3xl font-semibold">{formatGreetingDate()}</h1>
+          <h1 className="home-h1-sm">{formatGreetingDate()}</h1>
           <p className="mt-1 text-sm text-home-muted">Manage your site's resources and bookings.</p>
         </div>
 

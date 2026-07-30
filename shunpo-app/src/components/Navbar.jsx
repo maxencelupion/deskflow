@@ -77,14 +77,14 @@ export function Navbar({ onLoginClick }) {
             <button
               type="button"
               onClick={onLoginClick}
-              className="rounded-full bg-home-ink px-4 py-2 text-sm font-semibold text-home-bg transition-opacity hover:opacity-80"
+              className="home-pill-sm"
             >
               Log in
             </button>
           ) : (
             <Link
               to="/"
-              className="rounded-full bg-home-ink px-4 py-2 text-sm font-semibold text-home-bg transition-opacity hover:opacity-80"
+              className="home-pill-sm"
             >
               Log in
             </Link>

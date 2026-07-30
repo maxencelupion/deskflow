@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Eye, EyeOff } from "lucide-react"
 import { supabase } from "@/lib/supabase"
-import { isValidEmail } from "@/lib/utils"
+import { HOME_INPUT_CLASSNAME, isValidEmail } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -79,7 +79,7 @@ export function SignupForm({ emailRef, onSwitchToLogin }) {
                 onChange={handleEmailChange}
                 required
                 aria-invalid={emailInvalid}
-                className="border-home-border bg-home-card text-home-ink placeholder:text-home-muted-3 focus-visible:border-home-ink focus-visible:ring-home-border"
+                className={HOME_INPUT_CLASSNAME}
               />
               {emailInvalid && (
                 <FieldDescription className="text-red-500">
@@ -99,7 +99,7 @@ export function SignupForm({ emailRef, onSwitchToLogin }) {
                   required
                   minLength={6}
                   aria-invalid={passwordTooShort}
-                  className="border-home-border bg-home-card pr-8 text-home-ink placeholder:text-home-muted-3 focus-visible:border-home-ink focus-visible:ring-home-border"
+                  className={`pr-8 ${HOME_INPUT_CLASSNAME}`}
                 />
                 <button
                   type="button"
@@ -129,7 +129,7 @@ export function SignupForm({ emailRef, onSwitchToLogin }) {
                   required
                   minLength={6}
                   aria-invalid={passwordMismatch}
-                  className="border-home-border bg-home-card pr-8 text-home-ink placeholder:text-home-muted-3 focus-visible:border-home-ink focus-visible:ring-home-border"
+                  className={`pr-8 ${HOME_INPUT_CLASSNAME}`}
                 />
                 <button
                   type="button"

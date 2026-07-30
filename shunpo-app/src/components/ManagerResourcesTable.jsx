@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { Plus, SquarePen, Trash } from 'lucide-react'
 import { useAuth } from '@/context/useAuth'
 import { supabase } from '@/lib/supabase'
-import { cn, chipClassName } from '@/lib/utils'
+import { cn, chipClassName, HOME_DIALOG_CLASSNAME, HOME_INPUT_CLASSNAME } from '@/lib/utils'
 import { usePaginatedQuery } from '@/hooks/usePaginatedQuery'
 import { BOOKING_STATUS, RESOURCE_TYPE, RESOURCE_TYPES } from '@/lib/enums'
 import { getCurrentMonthRange } from '@/lib/dates'
@@ -14,7 +14,6 @@ import { Pagination } from '@/components/ui/pagination'
 import { CountBadge } from '@/components/CountBadge'
 import { ResourceTypeBadge } from '@/components/ResourceTypeBadge'
 
-const INPUT_CLASSNAME = "border-home-border bg-home-card text-home-ink placeholder:text-home-muted-3 focus-visible:border-home-ink focus-visible:ring-home-border"
 
 const emptyForm = { id: null, name: '', type: RESOURCE_TYPE.OFFICE, capacity: '1' }
 
@@ -164,14 +163,14 @@ export function ManagerResourcesTable({ pageSize = 5 }) {
         <button
           type="button"
           onClick={openAddDialog}
-          className="inline-flex items-center gap-1.5 rounded-full bg-home-ink px-4 py-2 text-sm font-semibold text-home-bg transition-opacity hover:opacity-80"
+          className="home-pill-sm"
         >
           <Plus className="size-4" />
           Add resource
         </button>
       </div>
 
-      <div className="w-full rounded-2xl border border-home-border bg-home-card p-5 shadow-[0_4px_16px_-6px_rgba(17,17,17,0.12)]">
+      <div className="home-card w-full p-5">
         {loading ? (
           <div className="flex justify-center py-4"><Spinner /></div>
         ) : resources.length === 0 ? (
@@ -203,7 +202,7 @@ export function ManagerResourcesTable({ pageSize = 5 }) {
                       type="button"
                       aria-label="Edit"
                       onClick={() => openEditDialog(resource)}
-                      className="rounded-full border border-home-border p-1.5 text-home-ink transition-colors hover:bg-home-border"
+                      className="home-icon-btn"
                     >
                       <SquarePen className="size-4" />
                     </button>
@@ -211,7 +210,7 @@ export function ManagerResourcesTable({ pageSize = 5 }) {
                       type="button"
                       aria-label="Delete"
                       onClick={() => handleDelete(resource)}
-                      className="rounded-full border border-home-border p-1.5 text-red-600 transition-colors hover:bg-red-50"
+                      className="home-icon-btn-danger"
                     >
                       <Trash className="size-4" />
                     </button>
@@ -230,7 +229,7 @@ export function ManagerResourcesTable({ pageSize = 5 }) {
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="rounded-2xl border-none bg-home-bg text-home-ink ring-home-border">
+        <DialogContent className={HOME_DIALOG_CLASSNAME}>
           <DialogHeader>
             <DialogTitle className="text-home-ink">{editing ? 'Edit resource' : 'New resource'}</DialogTitle>
           </DialogHeader>
@@ -245,7 +244,7 @@ export function ManagerResourcesTable({ pageSize = 5 }) {
                   value={form.name}
                   onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                   required
-                  className={INPUT_CLASSNAME}
+                  className={HOME_INPUT_CLASSNAME}
                 />
               </Field>
 
@@ -281,7 +280,7 @@ export function ManagerResourcesTable({ pageSize = 5 }) {
                   disabled={form.type === RESOURCE_TYPE.OFFICE}
                   onChange={(e) => setForm((f) => ({ ...f, capacity: e.target.value }))}
                   required
-                  className={INPUT_CLASSNAME}
+                  className={HOME_INPUT_CLASSNAME}
                 />
               </Field>
 
@@ -291,7 +290,7 @@ export function ManagerResourcesTable({ pageSize = 5 }) {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="rounded-full bg-home-ink px-5 py-2.5 text-sm font-semibold text-home-bg transition-opacity hover:opacity-80 disabled:opacity-50"
+                  className="home-pill"
                 >
                   {submitting ? '...' : editing ? 'Save changes' : 'Add resource'}
                 </button>

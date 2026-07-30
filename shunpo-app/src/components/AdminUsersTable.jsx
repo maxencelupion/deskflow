@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { SquarePen } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { HOME_DIALOG_CLASSNAME, HOME_INPUT_CLASSNAME } from '@/lib/utils'
 import { usePaginatedQuery } from '@/hooks/usePaginatedQuery'
 import { useSites } from '@/hooks/useSites'
 import { USER_ROLE, USER_ROLE_LABELS, BOOKING_STATUS } from '@/lib/enums'
@@ -15,7 +16,6 @@ import { Spinner } from '@/components/Spinner'
 
 const ASSIGNABLE_ROLES = [USER_ROLE.MEMBER, USER_ROLE.MANAGER]
 
-const INPUT_CLASSNAME = "border-home-border bg-home-card text-home-ink placeholder:text-home-muted-3 focus-visible:border-home-ink focus-visible:ring-home-border"
 
 const emptyForm = { id: null, email: '', role: USER_ROLE.MEMBER, site_id: '', monthly_quota_hours: '10' }
 
@@ -125,9 +125,9 @@ export function AdminUsersTable({ pageSize = 5 }) {
 
   return (
     <div>
-      <h2 className="mb-3.5 text-xs font-semibold uppercase tracking-wide text-home-muted">Users</h2>
+      <h2 className="home-section-label mb-3.5">Users</h2>
 
-      <div className="overflow-hidden rounded-2xl border border-home-border bg-home-card shadow-[0_4px_16px_-6px_rgba(17,17,17,0.12)]">
+      <div className="home-card overflow-hidden">
         {loading ? (
           <div className="flex justify-center px-5 py-6"><Spinner /></div>
         ) : users.length === 0 ? (
@@ -167,7 +167,7 @@ export function AdminUsersTable({ pageSize = 5 }) {
                             type="button"
                             aria-label="Edit"
                             onClick={() => openEditDialog(user)}
-                            className="rounded-full border border-home-border p-1.5 text-home-ink transition-colors hover:bg-home-border"
+                            className="home-icon-btn"
                           >
                             <SquarePen className="size-4" />
                           </button>
@@ -189,7 +189,7 @@ export function AdminUsersTable({ pageSize = 5 }) {
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="rounded-2xl border-none bg-home-bg text-home-ink ring-home-border">
+        <DialogContent className={HOME_DIALOG_CLASSNAME}>
           <DialogHeader>
             <DialogTitle className="text-home-ink">Edit {form.email}</DialogTitle>
           </DialogHeader>
@@ -239,7 +239,7 @@ export function AdminUsersTable({ pageSize = 5 }) {
                   value={form.monthly_quota_hours}
                   onChange={(e) => setForm((f) => ({ ...f, monthly_quota_hours: e.target.value }))}
                   required
-                  className={INPUT_CLASSNAME}
+                  className={HOME_INPUT_CLASSNAME}
                 />
               </Field>
 
@@ -249,7 +249,7 @@ export function AdminUsersTable({ pageSize = 5 }) {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="rounded-full bg-home-ink px-5 py-2.5 text-sm font-semibold text-home-bg transition-opacity hover:opacity-80 disabled:opacity-50"
+                  className="home-pill"
                 >
                   {submitting ? '...' : 'Save changes'}
                 </button>

@@ -73,7 +73,7 @@ export function AdminSiteBookingsList({ pageSize = 5, sites }) {
 
   return (
     <div>
-      <h2 className="mb-3.5 text-xs font-semibold uppercase tracking-wide text-home-muted">Bookings</h2>
+      <h2 className="home-section-label mb-3.5">Bookings</h2>
 
       <div className="mb-3.5">
         <SiteChipPicker sites={sites} value={siteId} onChange={setSiteId} includeAllOption />
@@ -87,7 +87,7 @@ export function AdminSiteBookingsList({ pageSize = 5, sites }) {
         <div className="flex flex-col gap-6">
           {groupConsecutiveBy(bookings, (b) => toDateInputValue(new Date(b.start_at))).map((group) => (
             <div key={group.key}>
-              <div className="mb-2.5 text-xs font-semibold uppercase tracking-wide text-home-muted-2">
+              <div className="home-group-label mb-2.5">
                 {formatGreetingDate(new Date(group.items[0].start_at))}
               </div>
               <div className="flex flex-col gap-2.5">
@@ -97,7 +97,7 @@ export function AdminSiteBookingsList({ pageSize = 5, sites }) {
                   return (
                     <div
                       key={booking.id}
-                      className="flex items-center gap-4 rounded-2xl border border-home-border bg-home-card px-5 py-4 shadow-[0_4px_16px_-8px_rgba(17,17,17,0.12)] transition-shadow hover:shadow-[0_8px_20px_-8px_rgba(17,17,17,0.2)]"
+                      className="home-booking-card"
                     >
                       <div className="flex-1">
                         <div className="text-[15px] font-semibold">
@@ -116,7 +116,7 @@ export function AdminSiteBookingsList({ pageSize = 5, sites }) {
                           type="button"
                           disabled={cancellingId === booking.id}
                           onClick={() => handleCancel(booking)}
-                          className="rounded-full border border-home-border px-4 py-2 text-[13px] font-medium transition-colors hover:bg-home-border disabled:opacity-50"
+                          className="home-pill-outline"
                         >
                           Cancel
                         </button>

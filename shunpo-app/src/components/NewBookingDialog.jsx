@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/context/useAuth'
 import { supabase } from '@/lib/supabase'
-import { chipClassName, cn } from '@/lib/utils'
+import { chipClassName, cn, HOME_DIALOG_CLASSNAME, HOME_INPUT_CLASSNAME } from '@/lib/utils'
 import { fetchMonthlyUsedHours, fetchResourceBookings, createBooking } from '@/lib/bookings'
 import {
   DAY_NAMES,
@@ -18,8 +18,6 @@ import { Calendar } from '@/components/ui/calendar'
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Field, FieldLabel, FieldDescription, FieldError, FieldGroup } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-
-const INPUT_CLASSNAME = "border-home-border bg-home-card text-home-ink placeholder:text-home-muted-3 focus-visible:border-home-ink focus-visible:ring-home-border"
 
 export function NewBookingDialog({ onBooked }) {
   const { profile } = useAuth()
@@ -236,13 +234,13 @@ export function NewBookingDialog({ onBooked }) {
       <button
         type="button"
         onClick={openDialog}
-        className="rounded-full bg-home-ink px-5 py-2.5 text-sm font-semibold text-home-bg transition-opacity hover:opacity-80"
+        className="home-pill"
       >
         New booking
       </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-h-[85vh] overflow-y-auto rounded-2xl border-none bg-home-bg text-home-ink ring-home-border sm:max-w-2xl">
+        <DialogContent className={`max-h-[85vh] overflow-y-auto sm:max-w-2xl ${HOME_DIALOG_CLASSNAME}`}>
           <DialogHeader>
             <DialogTitle className="text-home-ink">New booking</DialogTitle>
           </DialogHeader>
@@ -374,7 +372,7 @@ export function NewBookingDialog({ onBooked }) {
                     onChange={(e) => setHours(e.target.value)}
                     aria-invalid={exceedsQuota || hoursNotInteger}
                     required
-                    className={INPUT_CLASSNAME}
+                    className={HOME_INPUT_CLASSNAME}
                   />
                 </Field>
               )}
@@ -387,7 +385,7 @@ export function NewBookingDialog({ onBooked }) {
                     readOnly
                     disabled
                     value={end ? formatDateTime(end) : ''}
-                    className={INPUT_CLASSNAME}
+                    className={HOME_INPUT_CLASSNAME}
                   />
                 </Field>
               )}
@@ -415,7 +413,7 @@ export function NewBookingDialog({ onBooked }) {
                 <button
                   type="submit"
                   disabled={submitting || !canSubmit}
-                  className="rounded-full bg-home-ink px-5 py-2.5 text-sm font-semibold text-home-bg transition-opacity hover:opacity-80 disabled:opacity-50"
+                  className="home-pill"
                 >
                   {submitting ? '...' : 'Confirm booking'}
                 </button>
