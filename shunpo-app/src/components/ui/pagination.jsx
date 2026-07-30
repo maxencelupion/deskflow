@@ -12,11 +12,11 @@ export function Pagination({ page, totalPages, onPageChange }) {
         size="sm"
         hidden={page === 0}
         onClick={() => onPageChange(page - 1)}
-        className="col-start-1 justify-self-start"
+        className="col-start-1 justify-self-start rounded-full border-home-border bg-transparent text-home-ink hover:bg-home-border dark:bg-transparent"
       >
         Previous
       </Button>
-      <span className="col-start-2 justify-self-center text-xs text-muted-foreground">
+      <span className="col-start-2 justify-self-center text-xs text-home-muted">
         Page {page + 1} of {totalPages}
       </span>
       <Button
@@ -24,7 +24,7 @@ export function Pagination({ page, totalPages, onPageChange }) {
         size="sm"
         hidden={page + 1 >= totalPages}
         onClick={() => onPageChange(page + 1)}
-        className="col-start-3 justify-self-end"
+        className="col-start-3 justify-self-end rounded-full border-home-border bg-transparent text-home-ink hover:bg-home-border dark:bg-transparent"
       >
         Next
       </Button>
