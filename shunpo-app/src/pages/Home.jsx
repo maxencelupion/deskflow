@@ -48,13 +48,13 @@ export default function Home() {
     <div className="min-h-svh bg-home-bg text-home-ink">
       <Navbar onLoginClick={() => setAuthOpen(true)} />
 
-      <section className="relative mx-4 mt-14 flex h-105 items-end overflow-hidden rounded-3xl md:mx-6 md:h-160">
+      <section className="relative mx-4 mt-14 flex h-105 items-end overflow-hidden rounded-3xl shadow-[0_12px_32px_-10px_rgba(17,17,17,0.3)] md:mx-6 md:h-160">
         <img
           src="/home_background.jpg"
           alt=""
           className="absolute inset-0 h-full w-full object-cover"
         />
-        <div className="relative m-4 max-w-155 rounded-2xl bg-home-bg/80 p-4 backdrop-blur-sm md:m-8 md:p-6">
+        <div className="relative m-4 max-w-155 rounded-2xl bg-home-bg/80 p-4 shadow-[0_8px_24px_-8px_rgba(17,17,17,0.25)] backdrop-blur-sm md:m-8 md:p-6">
           <h1 className="font-heading text-3xl leading-[1.05] font-semibold tracking-tight md:text-5xl">
             Space, on your schedule.
           </h1>
@@ -122,7 +122,7 @@ export default function Home() {
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-3">
           {FEATURES.map((feature) => (
             <div key={feature.title}>
-              <div className="mb-5 aspect-4/3 w-full overflow-hidden rounded-2xl bg-home-placeholder">
+              <div className="mb-5 aspect-4/3 w-full overflow-hidden rounded-2xl bg-home-placeholder shadow-[0_8px_20px_-8px_rgba(17,17,17,0.2)] transition-shadow hover:shadow-[0_12px_28px_-8px_rgba(17,17,17,0.3)]">
                 <img src={feature.image} alt="" className="h-full w-full object-cover" />
               </div>
               <h3 className="mb-2 text-lg font-semibold">{feature.title}</h3>
