@@ -59,6 +59,9 @@ export function generateHourlySlots(opensAt, closesAt) {
 const shortDateFormatter = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' })
 const weekdayDateFormatter = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
 const timeFormatter = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
+const shortMonthFormatter = new Intl.DateTimeFormat('en-US', { month: 'short' })
+const longMonthFormatter = new Intl.DateTimeFormat('en-US', { month: 'long' })
+const greetingDateFormatter = new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
 
 export function formatDateTime(date) {
   return `${weekdayDateFormatter.format(date)}, ${timeFormatter.format(date)}`
@@ -76,4 +79,22 @@ export function formatTimeRange(startAt, endAt) {
   const end = new Date(endAt)
 
   return `${timeFormatter.format(start)} - ${timeFormatter.format(end)}`
+}
+
+// Month/day for the small date block shown next to booking cards
+export function formatDateBlock(dateInput) {
+  const date = new Date(dateInput)
+
+  return {
+    month: shortMonthFormatter.format(date),
+    day: String(date.getDate()).padStart(2, '0'),
+  }
+}
+
+export function formatMonthLong(date = new Date()) {
+  return longMonthFormatter.format(date)
+}
+
+export function formatGreetingDate(date = new Date()) {
+  return greetingDateFormatter.format(date)
 }

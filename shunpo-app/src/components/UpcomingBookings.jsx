@@ -1,8 +1,6 @@
 import { isLateCancellation } from '@/lib/bookings'
-import { formatTimeRange } from '@/lib/dates'
+import { formatDateBlock, formatTimeRange } from '@/lib/dates'
 import { Pagination } from '@/components/ui/pagination'
-
-const monthFormatter = new Intl.DateTimeFormat('en-US', { month: 'short' })
 
 export function UpcomingBookings({ bookings, loading, cancellingId, onCancel, page, totalPages, onPageChange }) {
   return (
@@ -18,7 +16,7 @@ export function UpcomingBookings({ bookings, loading, cancellingId, onCancel, pa
         <div className="flex flex-col gap-2.5">
           {bookings.map((booking) => {
             const late = isLateCancellation(booking.start_at)
-            const start = new Date(booking.start_at)
+            const dateBlock = formatDateBlock(booking.start_at)
 
             return (
               <div
@@ -26,10 +24,8 @@ export function UpcomingBookings({ bookings, loading, cancellingId, onCancel, pa
                 className="flex items-center gap-4 rounded-2xl border border-home-border bg-home-card px-5 py-4"
               >
                 <div className="w-13 shrink-0 text-center">
-                  <div className="text-[11px] text-home-muted-2 uppercase">{monthFormatter.format(start)}</div>
-                  <div className="font-heading text-xl font-semibold">
-                    {String(start.getDate()).padStart(2, '0')}
-                  </div>
+                  <div className="text-[11px] text-home-muted-2 uppercase">{dateBlock.month}</div>
+                  <div className="font-heading text-xl font-semibold">{dateBlock.day}</div>
                 </div>
                 <div className="h-9 w-px bg-home-border" />
                 <div className="flex-1">
@@ -42,7 +38,7 @@ export function UpcomingBookings({ bookings, loading, cancellingId, onCancel, pa
                   </div>
                   {late && (
                     <div className="mt-0.5 text-xs text-home-muted-3">
-                      Cancelling now won't refund these hours (inside the 24h window).
+                      Cancelling now won't refund these hours (starting time in less than 24 hours).
                     </div>
                   )}
                 </div>

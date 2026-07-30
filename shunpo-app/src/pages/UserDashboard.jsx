@@ -4,13 +4,11 @@ import { supabase } from '@/lib/supabase'
 import { usePageSize } from '@/hooks/usePageSize'
 import { usePaginatedQuery } from '@/hooks/usePaginatedQuery'
 import { BOOKING_STATUS, cancelBooking, fetchMonthlyUsedHours, isLateCancellation } from '@/lib/bookings'
-import { getCurrentMonthRange } from '@/lib/dates'
+import { formatGreetingDate, getCurrentMonthRange } from '@/lib/dates'
 import { NewBookingDialog } from '@/components/NewBookingDialog'
 import { MonthlyQuota } from '@/components/MonthlyQuota'
 import { NextBookingCard } from '@/components/NextBookingCard'
 import { UpcomingBookings } from '@/components/UpcomingBookings'
-
-const greetingDateFormatter = new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
 
 export default function UserDashboard() {
   const { profile } = useAuth()
@@ -133,7 +131,10 @@ export default function UserDashboard() {
     <div className="flex-1 bg-home-bg text-home-ink">
       <div className="mx-auto max-w-300 px-6 py-9 md:px-14">
         <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-          <h1 className="font-heading text-3xl font-semibold">{greetingDateFormatter.format(new Date())}</h1>
+          <div>
+            <h1 className="font-heading text-3xl font-semibold">{formatGreetingDate()}</h1>
+            <p className="mt-1 text-sm text-home-muted">Book your next rooms and offices for this month.</p>
+          </div>
           <NewBookingDialog onBooked={handleDataChanged} />
         </div>
 
