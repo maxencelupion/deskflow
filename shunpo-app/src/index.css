@@ -47,6 +47,7 @@
     --color-home-muted-3: var(--home-muted-3);
     --color-home-border: var(--home-border);
     --color-home-placeholder: var(--home-placeholder);
+    --color-home-card: var(--home-card);
     --radius-sm: calc(var(--radius) * 0.6);
     --radius-md: calc(var(--radius) * 0.8);
     --radius-lg: var(--radius);
@@ -57,11 +58,11 @@
 }
 
 :root {
-    --background: oklch(0.976 0.018 121.3);
+    --background: #f6f3ee;
     --foreground: oklch(0.187 0.033 224.3);
-    --card: oklch(0.99 0.01 121.3);
+    --card: oklch(1 0 0);
     --card-foreground: oklch(0.187 0.033 224.3);
-    --popover: oklch(0.99 0.01 121.3);
+    --popover: oklch(1 0 0);
     --popover-foreground: oklch(0.187 0.033 224.3);
     --primary: oklch(0.367 0.062 228.6);
     --primary-foreground: oklch(0.962 0.030 121.3);
@@ -81,7 +82,7 @@
     --chart-4: oklch(0.44 0.045 222.3);
     --chart-5: oklch(0.187 0.033 224.3);
     --radius: 0.625rem;
-    --sidebar: oklch(0.962 0.030 121.3);
+    --sidebar: oklch(1 0 0);
     --sidebar-foreground: oklch(0.187 0.033 224.3);
     --sidebar-primary: oklch(0.367 0.062 228.6);
     --sidebar-primary-foreground: oklch(0.962 0.030 121.3);
@@ -99,6 +100,7 @@
     --home-muted-3: #999999;
     --home-border: #11111122;
     --home-placeholder: #e9e3d3;
+    --home-card: #ffffff;
 }
 
 .dark {

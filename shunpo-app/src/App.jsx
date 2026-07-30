@@ -2,7 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { Layout } from './components/Layout'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import Home from './pages/Home'
-import Dashboard from './pages/Dashboard'
+import DashboardRouter from './pages/DashboardRouter'
 import Users from './pages/Users'
 
 export default function App() {
@@ -18,7 +18,7 @@ export default function App() {
           </ProtectedRoute>
         }
       >
-        <Route index element={<Dashboard />} />
+        <Route index element={<DashboardRouter />} />
       </Route>
       <Route element={<Layout />}>
         <Route

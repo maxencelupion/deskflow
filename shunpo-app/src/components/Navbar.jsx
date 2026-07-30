@@ -19,7 +19,7 @@ export function Navbar({ onLoginClick }) {
   return (
     <header
       className={cn(
-        "fixed inset-x-0 top-0 z-50 h-14 border-b bg-home-bg/95 backdrop-blur transition-transform duration-300 supports-backdrop-filter:bg-home-bg/60",
+        "fixed inset-x-0 top-0 z-50 h-14 border-b border-home-border bg-home-bg/95 backdrop-blur transition-transform duration-300 supports-backdrop-filter:bg-home-bg/60",
         hidden ? "-translate-y-full" : "translate-y-0"
       )}
     >

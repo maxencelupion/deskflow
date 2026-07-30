@@ -14,7 +14,6 @@ import {
   generateHourlySlots,
   formatDateTime,
 } from '@/lib/dates'
-import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { DialogSubmitFooter } from '@/components/ui/dialog-submit-footer'
@@ -235,9 +234,13 @@ export function NewBookingDialog({ onBooked }) {
 
   return (
     <>
-      <Button type="button" size="sm" onClick={openDialog}>
+      <button
+        type="button"
+        onClick={openDialog}
+        className="rounded-full bg-home-ink px-5 py-2.5 text-sm font-semibold text-home-bg transition-opacity hover:opacity-80"
+      >
         New booking
-      </Button>
+      </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">

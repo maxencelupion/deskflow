@@ -7,7 +7,7 @@ export function Footer() {
   return (
     <footer
       className={cn(
-        "sticky bottom-0 z-40 border-t bg-home-bg/95 backdrop-blur transition-transform duration-300 supports-backdrop-filter:bg-home-bg/60",
+        "sticky bottom-0 z-40 border-t border-home-border bg-home-bg/95 backdrop-blur transition-transform duration-300 supports-backdrop-filter:bg-home-bg/60",
         hidden ? "translate-y-full" : "translate-y-0"
       )}
     >

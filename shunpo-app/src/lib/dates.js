@@ -70,3 +70,10 @@ export function formatBookingRange(startAt, endAt) {
 
   return `${shortDateFormatter.format(start)}, ${timeFormatter.format(start)}-${timeFormatter.format(end)}`
 }
+
+export function formatTimeRange(startAt, endAt) {
+  const start = new Date(startAt)
+  const end = new Date(endAt)
+
+  return `${timeFormatter.format(start)} - ${timeFormatter.format(end)}`
+}
