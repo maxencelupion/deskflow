@@ -4,7 +4,7 @@ export function MonthlyQuota({ quotaUsed, quotaTotal, quotaRemaining, quotaPerce
   return (
     <div className="rounded-2xl border border-home-border bg-home-card p-6">
       <div className="mb-3 text-xs font-semibold tracking-wide text-home-muted uppercase">
-        Monthly hour quota - {monthLabelFormatter.format(new Date())}
+        Monthly quota - {monthLabelFormatter.format(new Date())}
       </div>
       <div className="mb-3.5 flex items-baseline gap-2">
         <span className="font-heading text-3xl font-bold">{quotaUsed}h</span>
