@@ -4,7 +4,7 @@ import { Pagination } from '@/components/ui/pagination'
 
 const monthFormatter = new Intl.DateTimeFormat('en-US', { month: 'short' })
 
-export function UpcomingBookingsList({ bookings, loading, cancellingId, onCancel, page, totalPages, onPageChange }) {
+export function UpcomingBookings({ bookings, loading, cancellingId, onCancel, page, totalPages, onPageChange }) {
   return (
     <div>
       <h2 className="mb-3.5 text-base font-semibold">Upcoming bookings</h2>

@@ -6,9 +6,9 @@ import { usePaginatedQuery } from '@/hooks/usePaginatedQuery'
 import { BOOKING_STATUS, cancelBooking, fetchMonthlyUsedHours, isLateCancellation } from '@/lib/bookings'
 import { getCurrentMonthRange } from '@/lib/dates'
 import { NewBookingDialog } from '@/components/NewBookingDialog'
-import { QuotaCard } from '@/components/QuotaCard'
+import { MonthlyQuota } from '@/components/MonthlyQuota'
 import { NextBookingCard } from '@/components/NextBookingCard'
-import { UpcomingBookingsList } from '@/components/UpcomingBookingsList'
+import { UpcomingBookings } from '@/components/UpcomingBookings'
 
 const greetingDateFormatter = new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
 
@@ -142,7 +142,7 @@ export default function UserDashboard() {
         </div>
 
         <div className="mb-10 grid grid-cols-1 gap-5 md:grid-cols-2">
-          <QuotaCard
+          <MonthlyQuota
             quotaUsed={quotaUsed}
             quotaTotal={quotaTotal}
             quotaRemaining={quotaRemaining}
@@ -152,7 +152,7 @@ export default function UserDashboard() {
           <NextBookingCard booking={nextBooking} />
         </div>
 
-        <UpcomingBookingsList
+        <UpcomingBookings
           bookings={bookings}
           loading={loading}
           cancellingId={cancellingId}
