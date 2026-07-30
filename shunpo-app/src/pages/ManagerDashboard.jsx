@@ -1,25 +1,28 @@
 import { usePageSize } from '@/hooks/usePageSize'
-import { ManageResources } from '@/components/ManageResources'
-import { SiteBookings } from '@/components/SiteBookings'
-import { PageBanner } from '@/components/PageBanner'
+import { formatGreetingDate } from '@/lib/dates'
+import { ManagerResourcesTable } from '@/components/ManagerResourcesTable'
+import { ManagerSiteBookings } from '@/components/ManagerSiteBookings'
 
 export default function ManagerDashboard() {
   const pageSize = usePageSize()
 
   return (
-    <>
-      <PageBanner
-        title="Welcome back"
-        subtitle="Here's what's coming up for you."
-        image="/worker.svg"
-      />
+    <div className="flex-1 bg-home-bg text-home-ink">
+      <div className="mx-auto max-w-300 px-6 py-9 md:px-14">
+        <div className="mb-8">
+          <h1 className="font-heading text-3xl font-semibold">{formatGreetingDate()}</h1>
+          <p className="mt-1 text-sm text-home-muted">Manage your site's resources and bookings.</p>
+        </div>
 
-      <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 p-4 md:p-10">
-        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
-          <ManageResources pageSize={pageSize} />
-          <SiteBookings pageSize={pageSize} />
+        <div className="mb-8 h-55 w-full overflow-hidden rounded-2xl">
+          <img src="/manager_dashboard.png" alt="" className="h-full w-full object-cover" />
+        </div>
+
+        <div className="flex flex-col gap-6">
+          <ManagerResourcesTable pageSize={pageSize} />
+          <ManagerSiteBookings pageSize={pageSize} />
         </div>
       </div>
-    </>
+    </div>
   )
 }
