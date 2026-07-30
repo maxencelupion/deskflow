@@ -3,6 +3,7 @@ import { SquarePen } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { usePaginatedQuery } from '@/hooks/usePaginatedQuery'
 import { useSites } from '@/hooks/useSites'
+import { USER_ROLE, USER_ROLE_LABELS } from '@/lib/enums'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -13,10 +14,9 @@ import { Pagination } from '@/components/ui/pagination'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
 import { SitePicker } from '@/components/SitePicker'
 
-const ROLE_LABELS = { member: 'Member', manager: 'Manager', admin: 'Admin' }
-const ASSIGNABLE_ROLES = ['member', 'manager']
+const ASSIGNABLE_ROLES = [USER_ROLE.MEMBER, USER_ROLE.MANAGER]
 
-const emptyForm = { id: null, email: '', role: 'member', site_id: '', monthly_quota_hours: '10' }
+const emptyForm = { id: null, email: '', role: USER_ROLE.MEMBER, site_id: '', monthly_quota_hours: '10' }
 
 export function ManageUsers({ pageSize = 5 }) {
   const [users, setUsers] = useState([])
@@ -65,7 +65,7 @@ export function ManageUsers({ pageSize = 5 }) {
     e.preventDefault()
     setError(null)
 
-    if (form.role === 'manager' && !form.site_id) {
+    if (form.role === USER_ROLE.MANAGER && !form.site_id) {
       setError('Select a site for this manager.')
       return
     }
@@ -117,12 +117,12 @@ export function ManageUsers({ pageSize = 5 }) {
                   <div className="flex flex-col">
                     <span className="text-sm font-medium">{user.email}</span>
                     <span className="text-xs text-muted-foreground">
-                      {ROLE_LABELS[user.role] ?? user.role}
-                      {user.role === 'manager' && user.sites?.name && ` - ${user.sites.name}`}
-                      {user.role === 'member' && ` - ${user.monthly_quota_hours}h/month`}
+                      {USER_ROLE_LABELS[user.role] ?? user.role}
+                      {user.role === USER_ROLE.MANAGER && user.sites?.name && ` - ${user.sites.name}`}
+                      {user.role === USER_ROLE.MEMBER && ` - ${user.monthly_quota_hours}h/month`}
                     </span>
                   </div>
-                  {user.role !== 'admin' && (
+                  {user.role !== USER_ROLE.ADMIN && (
                     <Button type="button" variant="outline" size="icon-sm" aria-label="Edit" onClick={() => openEditDialog(user)}>
                       <SquarePen />
                     </Button>
@@ -148,20 +148,20 @@ export function ManageUsers({ pageSize = 5 }) {
                 <FieldLabel htmlFor="user-role">Role</FieldLabel>
                 <Select
                   value={form.role}
-                  onValueChange={(value) => setForm((f) => ({ ...f, role: value, site_id: value === 'manager' ? f.site_id : '' }))}
+                  onValueChange={(value) => setForm((f) => ({ ...f, role: value, site_id: value === USER_ROLE.MANAGER ? f.site_id : '' }))}
                 >
                   <SelectTrigger id="user-role" className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {ASSIGNABLE_ROLES.map((role) => (
-                      <SelectItem key={role} value={role}>{ROLE_LABELS[role]}</SelectItem>
+                      <SelectItem key={role} value={role}>{USER_ROLE_LABELS[role]}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </Field>
 
-              {form.role === 'manager' && (
+              {form.role === USER_ROLE.MANAGER && (
                 <Field>
                   <FieldLabel htmlFor="user-site">Site</FieldLabel>
                   <SitePicker

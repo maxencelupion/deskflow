@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { Layout } from './components/Layout'
 import { ProtectedRoute } from './components/ProtectedRoute'
+import { USER_ROLE } from './lib/enums'
 import Home from './pages/Home'
 import DashboardRouter from './pages/DashboardRouter'
 import Users from './pages/Users'
@@ -24,7 +25,7 @@ export default function App() {
         <Route
           path="/users"
           element={
-            <ProtectedRoute allowedRoles={['admin']}>
+            <ProtectedRoute allowedRoles={[USER_ROLE.ADMIN]}>
               <Users />
             </ProtectedRoute>
           }

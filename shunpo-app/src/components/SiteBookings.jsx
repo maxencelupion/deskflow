@@ -3,15 +3,16 @@ import { X } from 'lucide-react'
 import { useAuth } from '@/context/useAuth'
 import { supabase } from '@/lib/supabase'
 import { usePaginatedQuery } from '@/hooks/usePaginatedQuery'
-import { BOOKING_STATUS, BOOKING_STATUS_LABELS, cancelBooking, isLateCancellation } from '@/lib/bookings'
+import { cancelBooking, isLateCancellation } from '@/lib/bookings'
 import { formatBookingRange } from '@/lib/dates'
+import { BOOKING_STATUS, BOOKING_STATUS_LABELS, USER_ROLE } from '@/lib/enums'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Pagination } from '@/components/ui/pagination'
 
 export function SiteBookings({ pageSize = 5, siteId, siteSelector }) {
   const { profile } = useAuth()
-  const canCancel = profile?.role === 'admin'
+  const canCancel = profile?.role === USER_ROLE.ADMIN
 
   const [bookings, setBookings] = useState([])
   const [cancellingId, setCancellingId] = useState(null)

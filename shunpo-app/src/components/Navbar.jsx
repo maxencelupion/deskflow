@@ -3,12 +3,13 @@ import { LayoutDashboard, LogOut, Users as UsersIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/context/useAuth"
 import { supabase } from "@/lib/supabase"
+import { USER_ROLE } from "@/lib/enums"
 import { Button } from "@/components/ui/button"
 import { useScrollDirection } from "@/hooks/useScrollDirection"
 
 const NAV_LINKS = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/users", label: "Users", icon: UsersIcon, roles: ["admin"] },
+  { to: "/users", label: "Users", icon: UsersIcon, roles: [USER_ROLE.ADMIN] },
 ]
 
 export function Navbar({ onLoginClick }) {

@@ -1,18 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { getCurrentMonthRange } from '@/lib/dates'
-
-// Mirrors the booking_status enum in supabase/migrations/20260721131256_schema_init.sql
-export const BOOKING_STATUS = {
-  CONFIRMED: 'confirmed',
-  CANCELLED_NOT_CHARGED: 'cancelled_not_charged',
-  CANCELLED_CHARGED: 'cancelled_charged',
-}
-
-export const BOOKING_STATUS_LABELS = {
-  [BOOKING_STATUS.CONFIRMED]: 'Confirmed',
-  [BOOKING_STATUS.CANCELLED_NOT_CHARGED]: 'Cancelled',
-  [BOOKING_STATUS.CANCELLED_CHARGED]: 'Cancelled but charged',
-}
+import { BOOKING_STATUS } from '@/lib/enums'
 
 // 24 hours in milliseconds
 const LATE_CANCELLATION_WINDOW_MS = 24 * 60 * 60 * 1000

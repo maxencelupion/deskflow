@@ -3,6 +3,7 @@ import { Plus, SquarePen, Trash } from 'lucide-react'
 import { useAuth } from '@/context/useAuth'
 import { supabase } from '@/lib/supabase'
 import { usePaginatedQuery } from '@/hooks/usePaginatedQuery'
+import { RESOURCE_TYPE, RESOURCE_TYPES } from '@/lib/enums'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -12,9 +13,7 @@ import { Field, FieldLabel, FieldError, FieldGroup } from '@/components/ui/field
 import { Input } from '@/components/ui/input'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
 
-const RESOURCE_TYPES = ['office', 'room']
-
-const emptyForm = { id: null, name: '', type: 'office', capacity: '1' }
+const emptyForm = { id: null, name: '', type: RESOURCE_TYPE.OFFICE, capacity: '1' }
 
 export function ManageResources({ pageSize = 5, siteId: siteIdProp, siteSelector }) {
   const { profile } = useAuth()
@@ -186,7 +185,7 @@ export function ManageResources({ pageSize = 5, siteId: siteIdProp, siteSelector
                     onValueChange={(value) => setForm((f) => ({
                       ...f,
                       type: value,
-                      capacity: value === 'office' ? '1' : f.capacity,
+                      capacity: value === RESOURCE_TYPE.OFFICE ? '1' : f.capacity,
                     }))}
                   >
                     <SelectTrigger id="resource-type" className="w-full">
@@ -207,7 +206,7 @@ export function ManageResources({ pageSize = 5, siteId: siteIdProp, siteSelector
                     min="1"
                     step="1"
                     value={form.capacity}
-                    disabled={form.type === 'office'}
+                    disabled={form.type === RESOURCE_TYPE.OFFICE}
                     onChange={(e) => setForm((f) => ({ ...f, capacity: e.target.value }))}
                     required
                   />
