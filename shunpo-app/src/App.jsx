@@ -1,8 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { Layout } from './components/Layout'
 import { ProtectedRoute } from './components/ProtectedRoute'
-import { GuestRoute } from './components/GuestRoute'
-import Auth from './pages/Auth'
+import Home from './pages/Home'
 import Dashboard from './pages/Dashboard'
 import Users from './pages/Users'
 
@@ -10,24 +9,18 @@ export default function App() {
   return (
     <Routes>
       <Route
-        path="/login"
+        path="/"
         element={
-          // GuestRoute prevents authenticated users from accessing the login page.
-          // Outside <Layout> on purpose: a full-bleed auth screen, no navbar/footer.
-          <GuestRoute>
-            <Auth />
-          </GuestRoute>
+          // Guests see the public landing page
+          // Signed-in users get the dashboard inside the regular app <Layout>
+          <ProtectedRoute fallback={<Home />}>
+            <Layout />
+          </ProtectedRoute>
         }
-      />
+      >
+        <Route index element={<Dashboard />} />
+      </Route>
       <Route element={<Layout />}>
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
         <Route
           path="/users"
           element={

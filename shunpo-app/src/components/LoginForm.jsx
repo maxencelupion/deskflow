@@ -51,16 +51,16 @@ export function LoginForm({ emailRef, onSwitchToSignup }) {
   }
 
   return (
-    <Card>
+    <Card className="bg-home-bg text-home-ink shadow-none ring-home-border">
       <CardHeader className="text-center">
-        <CardTitle className="text-xl">Welcome back</CardTitle>
-        <CardDescription>Enter your email below to log in</CardDescription>
+        <CardTitle className="text-xl text-home-ink">Welcome back</CardTitle>
+        <CardDescription className="text-home-muted">Enter your email below to log in</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit}>
           <FieldGroup>
             <Field>
-              <FieldLabel htmlFor="email">Email</FieldLabel>
+              <FieldLabel htmlFor="email" className="text-home-ink">Email</FieldLabel>
               <Input
                 id="email"
                 type="email"
@@ -68,11 +68,12 @@ export function LoginForm({ emailRef, onSwitchToSignup }) {
                 ref={(node) => { if (node) node.value = emailRef.current }}
                 onChange={handleEmailChange}
                 required
+                className="border-home-border bg-white text-home-ink placeholder:text-home-muted-3 focus-visible:border-home-ink focus-visible:ring-home-border"
               />
             </Field>
 
             <Field>
-              <FieldLabel htmlFor="password">Password</FieldLabel>
+              <FieldLabel htmlFor="password" className="text-home-ink">Password</FieldLabel>
               <div className="relative">
                 <Input
                   id="password"
@@ -81,14 +82,14 @@ export function LoginForm({ emailRef, onSwitchToSignup }) {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={6}
-                  className="pr-8"
+                  className="border-home-border bg-white pr-8 text-home-ink placeholder:text-home-muted-3 focus-visible:border-home-ink focus-visible:ring-home-border"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
                   tabIndex={-1}
                   aria-label={showPassword ? "Hide password" : "Show password"}
-                  className="absolute inset-y-0 right-2 flex items-center text-muted-foreground hover:text-foreground"
+                  className="absolute inset-y-0 right-2 flex items-center text-home-muted-2 hover:text-home-ink"
                 >
                   {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                 </button>
@@ -100,12 +101,20 @@ export function LoginForm({ emailRef, onSwitchToSignup }) {
             )}
 
             <Field>
-              <Button type="submit" className="text-base" disabled={loading || password.length === 0}>
+              <Button
+                type="submit"
+                className="bg-home-ink text-base text-home-bg hover:bg-home-ink/85"
+                disabled={loading || password.length === 0}
+              >
                 {loading ? "..." : "Log in"}
               </Button>
-              <FieldDescription className="text-center">
+              <FieldDescription className="text-center text-home-muted">
                 Don't have an account?{" "}
-                <a href="#" onClick={(e) => { e.preventDefault(); onSwitchToSignup() }}>
+                <a
+                  href="#"
+                  onClick={(e) => { e.preventDefault(); onSwitchToSignup() }}
+                  className="text-home-ink! hover:text-home-muted!"
+                >
                   Sign up
                 </a>
               </FieldDescription>

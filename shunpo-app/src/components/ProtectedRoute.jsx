@@ -1,7 +1,7 @@
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../context/useAuth'
 
-export function ProtectedRoute({ children, allowedRoles }) {
+export function ProtectedRoute({ children, allowedRoles, fallback }) {
   const { session, profile, loading } = useAuth()
 
   if (loading) {
@@ -9,7 +9,7 @@ export function ProtectedRoute({ children, allowedRoles }) {
   }
 
   if (!session) {
-    return <Navigate to="/login" replace />
+    return fallback ?? <Navigate to="/" replace />
   }
 
   if (allowedRoles && !allowedRoles.includes(profile?.role)) {

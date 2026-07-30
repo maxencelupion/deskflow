@@ -39,6 +39,14 @@
     --color-card: var(--card);
     --color-foreground: var(--foreground);
     --color-background: var(--background);
+    --color-home-bg: var(--home-bg);
+    --color-home-ink: var(--home-ink);
+    --color-home-ink-soft: var(--home-ink-soft);
+    --color-home-muted: var(--home-muted);
+    --color-home-muted-2: var(--home-muted-2);
+    --color-home-muted-3: var(--home-muted-3);
+    --color-home-border: var(--home-border);
+    --color-home-placeholder: var(--home-placeholder);
     --radius-sm: calc(var(--radius) * 0.6);
     --radius-md: calc(var(--radius) * 0.8);
     --radius-lg: var(--radius);
@@ -81,6 +89,16 @@
     --sidebar-accent-foreground: oklch(0.187 0.033 224.3);
     --sidebar-border: oklch(0.87 0.022 147.9);
     --sidebar-ring: oklch(0.585 0.052 222.3);
+
+    /* Home (public landing page) palette — fixed, does not swap with dark mode */
+    --home-bg: #f6f3ee;
+    --home-ink: #111111;
+    --home-ink-soft: #333333;
+    --home-muted: #555555;
+    --home-muted-2: #777777;
+    --home-muted-3: #999999;
+    --home-border: #11111122;
+    --home-placeholder: #e9e3d3;
 }
 
 .dark {

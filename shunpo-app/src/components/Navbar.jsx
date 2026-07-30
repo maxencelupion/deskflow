@@ -11,7 +11,7 @@ const NAV_LINKS = [
   { to: "/users", label: "Users", icon: UsersIcon, roles: ["admin"] },
 ]
 
-export function Navbar() {
+export function Navbar({ onLoginClick }) {
   const hidden = useScrollDirection()
   const { session, profile } = useAuth()
   const links = NAV_LINKS.filter((link) => !link.roles || link.roles.includes(profile?.role))
@@ -19,11 +19,11 @@ export function Navbar() {
   return (
     <header
       className={cn(
-        "fixed inset-x-0 top-0 z-50 h-14 border-b bg-background/95 backdrop-blur transition-transform duration-300 supports-backdrop-filter:bg-background/60",
+        "fixed inset-x-0 top-0 z-50 h-14 border-b bg-home-bg/95 backdrop-blur transition-transform duration-300 supports-backdrop-filter:bg-home-bg/60",
         hidden ? "-translate-y-full" : "translate-y-0"
       )}
     >
-      <div className="mx-auto grid h-full max-w-5xl grid-cols-[1fr_auto_1fr] items-center px-4">
+      <div className="grid h-full grid-cols-[1fr_auto_1fr] items-center px-4 md:px-14">
         <Link to="/" className="flex items-center gap-2 text-sm font-semibold">
           <img src="/logo.svg" alt="" className="size-6" />
           <span className="hidden sm:inline">DeskFlow</span>
@@ -61,8 +61,8 @@ export function Navbar() {
           </nav>
         )}
 
-        <div className="flex justify-end">
-          {session && (
+        <div className="col-start-3 flex justify-end">
+          {session ? (
             <Button
               variant="ghost"
               size="icon-sm"
@@ -72,6 +72,21 @@ export function Navbar() {
             >
               <LogOut className="size-4" />
             </Button>
+          ) : onLoginClick ? (
+            <button
+              type="button"
+              onClick={onLoginClick}
+              className="rounded-full bg-home-ink px-4 py-2 text-sm font-semibold text-home-bg transition-opacity hover:opacity-80"
+            >
+              Log in
+            </button>
+          ) : (
+            <Link
+              to="/"
+              className="rounded-full bg-home-ink px-4 py-2 text-sm font-semibold text-home-bg transition-opacity hover:opacity-80"
+            >
+              Log in
+            </Link>
           )}
         </div>
       </div>
