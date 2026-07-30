@@ -4,7 +4,7 @@ export function NextBookingCard({ booking }) {
   const dateBlock = booking ? formatDateBlock(booking.start_at) : null
 
   return (
-    <div className="flex flex-col justify-center rounded-2xl bg-home-ink p-6 text-home-bg">
+    <div className="flex flex-col justify-center rounded-2xl bg-home-ink p-6 text-home-bg shadow-[0_4px_16px_-8px_rgba(17,17,17,0.3)]">
       <div className="mb-2 text-xs font-semibold tracking-wide text-home-bg/60 uppercase">Next up</div>
       {booking ? (
         <>

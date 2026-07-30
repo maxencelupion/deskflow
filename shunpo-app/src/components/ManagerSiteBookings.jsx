@@ -1,10 +1,12 @@
+import { Spinner } from '@/components/Spinner'
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/context/useAuth'
 import { supabase } from '@/lib/supabase'
+import { groupConsecutiveBy } from '@/lib/utils'
 import { usePaginatedQuery } from '@/hooks/usePaginatedQuery'
-import { BOOKING_STATUS_LABELS } from '@/lib/enums'
-import { formatDateBlock, formatTimeRange } from '@/lib/dates'
+import { formatGreetingDate, formatTimeRange, toDateInputValue } from '@/lib/dates'
 import { Pagination } from '@/components/ui/pagination'
+import { BookingStatusBadge } from '@/components/BookingStatusBadge'
 
 export function ManagerSiteBookings({ pageSize = 5 }) {
   const { profile } = useAuth()
@@ -62,38 +64,36 @@ export function ManagerSiteBookings({ pageSize = 5 }) {
     <div>
       <h2 className="mb-3.5 text-base font-semibold">{siteName} bookings</h2>
       {loading ? (
-        <p className="text-sm text-home-muted">Loading...</p>
+        <div className="flex justify-center py-4"><Spinner /></div>
       ) : bookings.length === 0 ? (
         <p className="py-4 text-sm text-home-muted-2">No bookings yet.</p>
       ) : (
-        <div className="flex flex-col gap-2.5">
-          {bookings.map((booking) => {
-            const dateBlock = formatDateBlock(booking.start_at)
-
-            return (
-              <div
-                key={booking.id}
-                className="flex items-center gap-4 rounded-2xl border border-home-border bg-home-card px-5 py-4"
-              >
-                <div className="w-13 shrink-0 text-center">
-                  <div className="text-[11px] text-home-muted-2 uppercase">{dateBlock.month}</div>
-                  <div className="font-heading text-xl font-semibold">{dateBlock.day}</div>
-                </div>
-                <div className="h-9 w-px bg-home-border" />
-                <div className="flex-1">
-                  <div className="text-[15px] font-semibold">
-                    {booking.resources?.name} : Seat {booking.seat_number}
-                  </div>
-                  <div className="text-sm text-home-muted">
-                    {formatTimeRange(booking.start_at, booking.end_at)} - {booking.profiles?.email} - {booking.hours_charged} hour{booking.hours_charged > 1 ? 's' : ''}
-                  </div>
-                </div>
-                <span className="shrink-0 rounded-full border border-home-border px-3 py-1 text-xs font-medium text-home-muted">
-                  {BOOKING_STATUS_LABELS[booking.status] ?? booking.status}
-                </span>
+        <div className="flex flex-col gap-6">
+          {groupConsecutiveBy(bookings, (b) => toDateInputValue(new Date(b.start_at))).map((group) => (
+            <div key={group.key}>
+              <div className="mb-2.5 text-xs font-semibold uppercase tracking-wide text-home-muted-2">
+                {formatGreetingDate(new Date(group.items[0].start_at))}
               </div>
-            )
-          })}
+              <div className="flex flex-col gap-2.5">
+                {group.items.map((booking) => (
+                  <div
+                    key={booking.id}
+                    className="flex items-center gap-4 rounded-2xl border border-home-border bg-home-card px-5 py-4 shadow-[0_4px_16px_-8px_rgba(17,17,17,0.12)] transition-shadow hover:shadow-[0_8px_20px_-8px_rgba(17,17,17,0.2)]"
+                  >
+                    <div className="flex-1">
+                      <div className="text-[15px] font-semibold">
+                        {booking.resources?.name} : Seat {booking.seat_number}
+                      </div>
+                      <div className="text-sm text-home-muted">
+                        {formatTimeRange(booking.start_at, booking.end_at)} - {booking.profiles?.email} - {booking.hours_charged} hour{booking.hours_charged > 1 ? 's' : ''}
+                      </div>
+                    </div>
+                    <BookingStatusBadge status={booking.status} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
 
           <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
         </div>

@@ -2,7 +2,7 @@ import { formatMonthLong } from '@/lib/dates'
 
 export function MonthlyQuota({ quotaUsed, quotaTotal, quotaRemaining, quotaPercent, resetText }) {
   return (
-    <div className="rounded-2xl border border-home-border bg-home-card p-6">
+    <div className="rounded-2xl border border-home-border bg-home-card p-6 shadow-[0_4px_16px_-8px_rgba(17,17,17,0.12)]">
       <div className="mb-3 text-xs font-semibold tracking-wide text-home-muted uppercase">
         Monthly quota - {formatMonthLong()}
       </div>

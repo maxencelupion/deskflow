@@ -14,7 +14,7 @@ export default function ManagerDashboard() {
           <p className="mt-1 text-sm text-home-muted">Manage your site's resources and bookings.</p>
         </div>
 
-        <div className="mb-8 h-55 w-full overflow-hidden rounded-2xl">
+        <div className="mb-8 h-55 w-full overflow-hidden rounded-2xl shadow-[0_8px_24px_-8px_rgba(17,17,17,0.25)]">
           <img src="/manager_dashboard.png" alt="" className="h-full w-full object-cover" />
         </div>
 

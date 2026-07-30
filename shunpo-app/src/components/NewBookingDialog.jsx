@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/context/useAuth'
 import { supabase } from '@/lib/supabase'
-import { cn } from '@/lib/utils'
+import { chipClassName, cn } from '@/lib/utils'
 import { fetchMonthlyUsedHours, fetchResourceBookings, createBooking } from '@/lib/bookings'
 import {
   DAY_NAMES,
@@ -20,15 +20,6 @@ import { Field, FieldLabel, FieldDescription, FieldError, FieldGroup } from '@/c
 import { Input } from '@/components/ui/input'
 
 const INPUT_CLASSNAME = "border-home-border bg-home-card text-home-ink placeholder:text-home-muted-3 focus-visible:border-home-ink focus-visible:ring-home-border"
-
-function chipClassName(active) {
-  return cn(
-    "rounded-full border px-4 py-2 text-sm font-medium transition-colors",
-    active
-      ? "border-home-ink bg-home-ink text-home-bg"
-      : "border-home-border bg-home-card text-home-ink hover:bg-home-border"
-  )
-}
 
 export function NewBookingDialog({ onBooked }) {
   const { profile } = useAuth()

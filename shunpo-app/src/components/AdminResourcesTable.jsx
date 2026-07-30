@@ -1,7 +1,6 @@
 import { Spinner } from '@/components/Spinner'
-import { useEffect, useState } from 'react'
-import { Plus, SquarePen, Trash } from 'lucide-react'
-import { useAuth } from '@/context/useAuth'
+import { useState } from 'react'
+import { SquarePen, Trash } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { cn, chipClassName } from '@/lib/utils'
 import { usePaginatedQuery } from '@/hooks/usePaginatedQuery'
@@ -11,6 +10,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '
 import { Field, FieldLabel, FieldError, FieldGroup } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Pagination } from '@/components/ui/pagination'
+import { SiteChipPicker } from '@/components/SiteChipPicker'
 import { CountBadge } from '@/components/CountBadge'
 import { ResourceTypeBadge } from '@/components/ResourceTypeBadge'
 
@@ -18,31 +18,16 @@ const INPUT_CLASSNAME = "border-home-border bg-home-card text-home-ink placehold
 
 const emptyForm = { id: null, name: '', type: RESOURCE_TYPE.OFFICE, capacity: '1' }
 
-export function ManagerResourcesTable({ pageSize = 5 }) {
-  const { profile } = useAuth()
-  const siteId = profile?.site_id
+export function AdminResourcesTable({ pageSize = 5, sites, sitesLoading }) {
+  const [selectedSiteId, setSelectedSiteId] = useState('')
+  const siteId = selectedSiteId || sites[0]?.id || ''
 
-  const [siteName, setSiteName] = useState('')
   const [resources, setResources] = useState([])
   const [bookingCounts, setBookingCounts] = useState({})
   const [open, setOpen] = useState(false)
   const [form, setForm] = useState(emptyForm)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
-
-  useEffect(() => {
-    if (!siteId) {
-      return
-    }
-
-    supabase.from('sites').select('name').eq('id', siteId).single().then(({ data, error: fetchError }) => {
-      if (fetchError) {
-        console.error('Error loading site:', fetchError)
-      } else {
-        setSiteName(data.name)
-      }
-    })
-  }, [siteId])
 
   const { page, setPage, totalPages, loading, refetch } = usePaginatedQuery(
     async (page, pageSize) => {
@@ -157,18 +142,30 @@ export function ManagerResourcesTable({ pageSize = 5 }) {
     }
   }
 
+  if (!sitesLoading && sites.length === 0) {
+    return (
+      <div>
+        <h2 className="mb-3.5 text-xs font-semibold uppercase tracking-wide text-home-muted">Resources</h2>
+        <p className="text-sm text-home-muted-2">Create a site first.</p>
+      </div>
+    )
+  }
+
   return (
     <div>
-      <div className="mb-3.5 flex items-center justify-between gap-3">
-        <h2 className="text-base font-semibold">{siteName ? `${siteName} ` : ''}resources</h2>
+      <div className="mb-3.5 flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-xs font-semibold uppercase tracking-wide text-home-muted">Resources</h2>
         <button
           type="button"
           onClick={openAddDialog}
           className="inline-flex items-center gap-1.5 rounded-full bg-home-ink px-4 py-2 text-sm font-semibold text-home-bg transition-opacity hover:opacity-80"
         >
-          <Plus className="size-4" />
           Add resource
         </button>
+      </div>
+
+      <div className="mb-3.5">
+        <SiteChipPicker sites={sites} value={siteId} onChange={setSelectedSiteId} />
       </div>
 
       <div className="w-full rounded-2xl border border-home-border bg-home-card p-5 shadow-[0_4px_16px_-6px_rgba(17,17,17,0.12)]">
