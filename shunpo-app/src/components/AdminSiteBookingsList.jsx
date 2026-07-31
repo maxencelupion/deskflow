@@ -12,7 +12,7 @@ import { BookingStatusBadge } from '@/components/BookingStatusBadge'
 import { ViewToggle } from '@/components/ViewToggle'
 import { BookingsMonthCalendar } from '@/components/BookingsMonthCalendar'
 
-export function AdminSiteBookingsList({ pageSize = 5, sites }) {
+export function AdminSiteBookingsList({ pageSize = 5, sites, reloadKey }) {
   const [siteId, setSiteId] = useState('')
   const [bookings, setBookings] = useState([])
   const [monthBookings, setMonthBookings] = useState([])
@@ -48,7 +48,7 @@ export function AdminSiteBookingsList({ pageSize = 5, sites }) {
       setBookings(data)
       return { count }
     },
-    [siteId],
+    [siteId, reloadKey],
     pageSize
   )
 
@@ -77,7 +77,7 @@ export function AdminSiteBookingsList({ pageSize = 5, sites }) {
     })
   }
 
-  useEffect(loadMonthBookings, [siteId, calendarMonth])
+  useEffect(loadMonthBookings, [siteId, calendarMonth, reloadKey])
 
   useEffect(() => {
     const channel = supabase
@@ -126,7 +126,7 @@ export function AdminSiteBookingsList({ pageSize = 5, sites }) {
       <div key={booking.id} className="home-booking-card">
         <div className="flex-1">
           <div className="text-[15px] font-semibold">
-            {booking.resources?.sites?.name} · {booking.resources?.name} · Seat {booking.seat_number}
+            {booking.resources?.sites?.name} - {booking.resources?.name} - Seat {booking.seat_number}
           </div>
           <div className="text-sm text-home-muted">
             {formatTimeRange(booking.start_at, booking.end_at)} - {booking.profiles?.email} -{' '}

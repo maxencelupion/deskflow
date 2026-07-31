@@ -10,7 +10,7 @@ import { BookingStatusBadge } from '@/components/BookingStatusBadge'
 import { ViewToggle } from '@/components/ViewToggle'
 import { BookingsMonthCalendar } from '@/components/BookingsMonthCalendar'
 
-export function ManagerSiteBookings({ pageSize = 5 }) {
+export function ManagerSiteBookings({ pageSize = 5, reloadKey }) {
   const { profile } = useAuth()
   const siteId = profile?.site_id
 
@@ -47,7 +47,7 @@ export function ManagerSiteBookings({ pageSize = 5 }) {
         setResourceIds(data.map((r) => r.id))
       }
     })
-  }, [siteId])
+  }, [siteId, reloadKey])
 
   function loadMonthBookings() {
     const { startOfMonth, startOfNextMonth } = getCurrentMonthRange(calendarMonth)
@@ -75,7 +75,7 @@ export function ManagerSiteBookings({ pageSize = 5 }) {
 
     loadMonthBookings()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [siteId, calendarMonth])
+  }, [siteId, calendarMonth, reloadKey])
 
   const { page, setPage, totalPages, loading, refetch } = usePaginatedQuery(
     async (page, pageSize) => {
@@ -104,7 +104,7 @@ export function ManagerSiteBookings({ pageSize = 5 }) {
       setBookings(data)
       return { count }
     },
-    [siteId],
+    [siteId, reloadKey],
     pageSize
   )
 

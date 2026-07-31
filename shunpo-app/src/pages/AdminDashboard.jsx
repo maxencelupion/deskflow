@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { usePageSize } from '@/hooks/usePageSize'
 import { useSites } from '@/hooks/useSites'
 import { formatGreetingDate } from '@/lib/dates'
@@ -8,6 +9,7 @@ import { AdminSiteBookingsList } from '@/components/AdminSiteBookingsList'
 export default function AdminDashboard() {
   const pageSize = usePageSize()
   const { sites, loading: sitesLoading, refetch: refetchSites } = useSites()
+  const [resourcesReloadKey, setResourcesReloadKey] = useState(0)
 
   return (
     <div className="home-page">
@@ -19,8 +21,13 @@ export default function AdminDashboard() {
 
         <div className="flex flex-col gap-14">
           <AdminSitesTable pageSize={pageSize} onSiteAdded={refetchSites} />
-          <AdminResourcesTable pageSize={pageSize} sites={sites} sitesLoading={sitesLoading} />
-          <AdminSiteBookingsList pageSize={pageSize} sites={sites} />
+          <AdminResourcesTable
+            pageSize={pageSize}
+            sites={sites}
+            sitesLoading={sitesLoading}
+            onResourceChanged={() => setResourcesReloadKey((k) => k + 1)}
+          />
+          <AdminSiteBookingsList pageSize={pageSize} sites={sites} reloadKey={resourcesReloadKey} />
         </div>
       </div>
     </div>

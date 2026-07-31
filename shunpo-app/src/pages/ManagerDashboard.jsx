@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { usePageSize } from '@/hooks/usePageSize'
 import { formatGreetingDate } from '@/lib/dates'
 import { ManagerResourcesTable } from '@/components/ManagerResourcesTable'
@@ -5,6 +6,7 @@ import { ManagerSiteBookings } from '@/components/ManagerSiteBookings'
 
 export default function ManagerDashboard() {
   const pageSize = usePageSize()
+  const [resourcesReloadKey, setResourcesReloadKey] = useState(0)
 
   return (
     <div className="home-page">
@@ -19,8 +21,11 @@ export default function ManagerDashboard() {
         </div>
 
         <div className="flex flex-col gap-6">
-          <ManagerResourcesTable pageSize={pageSize} />
-          <ManagerSiteBookings pageSize={pageSize} />
+          <ManagerResourcesTable
+            pageSize={pageSize}
+            onResourceChanged={() => setResourcesReloadKey((k) => k + 1)}
+          />
+          <ManagerSiteBookings pageSize={pageSize} reloadKey={resourcesReloadKey} />
         </div>
       </div>
     </div>

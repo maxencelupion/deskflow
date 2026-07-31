@@ -181,10 +181,7 @@ export function AdminSitesTable({ pageSize = 5, onSiteAdded }) {
     }
 
     refetch()
-
-    if (!editing) {
-      onSiteAdded?.()
-    }
+    onSiteAdded?.()
 
     setOpen(false)
     setForm(emptyForm)

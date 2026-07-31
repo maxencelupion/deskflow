@@ -17,7 +17,7 @@ import { ResourceTypeBadge } from '@/components/ResourceTypeBadge'
 
 const emptyForm = { id: null, name: '', type: RESOURCE_TYPE.OFFICE, capacity: '1' }
 
-export function AdminResourcesTable({ pageSize = 5, sites, sitesLoading }) {
+export function AdminResourcesTable({ pageSize = 5, sites, sitesLoading, onResourceChanged }) {
   const [selectedSiteId, setSelectedSiteId] = useState('')
   const siteId = selectedSiteId || sites[0]?.id || ''
 
@@ -120,6 +120,7 @@ export function AdminResourcesTable({ pageSize = 5, sites, sitesLoading }) {
       }
     } else {
       refetch()
+      onResourceChanged?.()
       setOpen(false)
       setForm(emptyForm)
     }
@@ -138,6 +139,7 @@ export function AdminResourcesTable({ pageSize = 5, sites, sitesLoading }) {
       console.error('Error deleting resource:', deleteError)
     } else {
       refetch()
+      onResourceChanged?.()
     }
   }
 
