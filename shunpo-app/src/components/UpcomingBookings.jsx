@@ -57,14 +57,14 @@ export function UpcomingBookings({
         <ViewToggle view={view} onChange={setView} />
       </div>
 
-      {loading ? (
-        <div className="flex justify-center py-4"><Spinner /></div>
-      ) : view === 'calendar' ? (
+      {view === 'calendar' ? (
         <BookingsMonthCalendar
           bookings={monthBookings}
           renderBooking={renderCard}
           emptyMessage="No upcoming bookings on this day."
         />
+      ) : loading ? (
+        <div className="flex justify-center py-4"><Spinner /></div>
       ) : bookings.length === 0 ? (
         <p className="py-4 text-sm text-home-muted-2">
           No upcoming bookings - use "New booking" to reserve a room.

@@ -78,6 +78,21 @@ export function AdminSiteBookingsList({ pageSize = 5, sites }) {
 
   useEffect(loadMonthBookings, [siteId])
 
+  useEffect(() => {
+    const channel = supabase
+      .channel('admin-bookings')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => {
+        refetch()
+        loadMonthBookings()
+      })
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [siteId])
+
   async function handleCancel(booking) {
     const late = isLateCancellation(booking.start_at)
 
@@ -145,14 +160,14 @@ export function AdminSiteBookingsList({ pageSize = 5, sites }) {
         <SiteChipPicker sites={sites} value={siteId} onChange={setSiteId} includeAllOption />
       </div>
 
-      {loading ? (
-        <div className="flex justify-center py-4"><Spinner /></div>
-      ) : view === 'calendar' ? (
+      {view === 'calendar' ? (
         <BookingsMonthCalendar
           bookings={monthBookings}
           renderBooking={renderCard}
           emptyMessage="No upcoming bookings on this day."
         />
+      ) : loading ? (
+        <div className="flex justify-center py-4"><Spinner /></div>
       ) : bookings.length === 0 ? (
         <p className="py-4 text-sm text-home-muted-2">No bookings yet.</p>
       ) : (

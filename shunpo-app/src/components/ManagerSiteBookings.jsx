@@ -15,6 +15,7 @@ export function ManagerSiteBookings({ pageSize = 5 }) {
   const siteId = profile?.site_id
 
   const [siteName, setSiteName] = useState('')
+  const [resourceIds, setResourceIds] = useState([])
   const [bookings, setBookings] = useState([])
   const [monthBookings, setMonthBookings] = useState([])
   const [view, setView] = useState('calendar')
@@ -38,6 +39,16 @@ export function ManagerSiteBookings({ pageSize = 5 }) {
       return
     }
 
+    supabase.from('resources').select('id').eq('site_id', siteId).then(({ data, error }) => {
+      if (error) {
+        console.error('Error loading site resources:', error)
+      } else {
+        setResourceIds(data.map((r) => r.id))
+      }
+    })
+  }, [siteId])
+
+  function loadMonthBookings() {
     const { startOfMonth, startOfNextMonth } = getCurrentMonthRange()
 
     supabase
@@ -54,9 +65,18 @@ export function ManagerSiteBookings({ pageSize = 5 }) {
           setMonthBookings(data)
         }
       })
+  }
+
+  useEffect(() => {
+    if (!siteId) {
+      return
+    }
+
+    loadMonthBookings()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [siteId])
 
-  const { page, setPage, totalPages, loading } = usePaginatedQuery(
+  const { page, setPage, totalPages, loading, refetch } = usePaginatedQuery(
     async (page, pageSize) => {
       if (!siteId) {
         return { count: 0 }
@@ -87,6 +107,29 @@ export function ManagerSiteBookings({ pageSize = 5 }) {
     pageSize
   )
 
+  useEffect(() => {
+    if (resourceIds.length === 0) {
+      return
+    }
+
+    const channel = supabase
+      .channel(`manager-bookings-${siteId}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'bookings', filter: `resource_id=in.(${resourceIds.join(',')})` },
+        () => {
+          refetch()
+          loadMonthBookings()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resourceIds.join(',')])
+
   function renderCard(booking) {
     return (
       <div key={booking.id} className="home-booking-card">
@@ -110,14 +153,14 @@ export function ManagerSiteBookings({ pageSize = 5 }) {
         <ViewToggle view={view} onChange={setView} />
       </div>
 
-      {loading ? (
-        <div className="flex justify-center py-4"><Spinner /></div>
-      ) : view === 'calendar' ? (
+      {view === 'calendar' ? (
         <BookingsMonthCalendar
           bookings={monthBookings}
           renderBooking={renderCard}
           emptyMessage="No upcoming bookings on this day."
         />
+      ) : loading ? (
+        <div className="flex justify-center py-4"><Spinner /></div>
       ) : bookings.length === 0 ? (
         <p className="py-4 text-sm text-home-muted-2">No bookings yet.</p>
       ) : (
