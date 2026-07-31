@@ -117,9 +117,26 @@ export function NewBookingDialog({ onBooked }) {
     const rangeStart = combineDateAndTime(date, '00:00')
     const rangeEnd = new Date(rangeStart.getTime() + 24 * 3600000)
 
-    fetchResourceBookings({ resourceId, rangeStart, rangeEnd })
-      .then(setDayBookings)
-      .catch((fetchError) => console.error('Error loading availability:', fetchError))
+    function reloadAvailability() {
+      fetchResourceBookings({ resourceId, rangeStart, rangeEnd })
+        .then(setDayBookings)
+        .catch((fetchError) => console.error('Error loading availability:', fetchError))
+    }
+
+    reloadAvailability()
+
+    const channel = supabase
+      .channel(`bookings-${resourceId}-${date}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'bookings', filter: `resource_id=eq.${resourceId}` },
+        reloadAvailability
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }, [resourceId, date])
 
   function findHoursForDay(dayOfWeek) {
