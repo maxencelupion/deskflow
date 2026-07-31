@@ -71,7 +71,7 @@ export function BookingsMonthCalendar({ bookings, renderBooking, month, onMonthC
           >
             <ChevronLeft className="size-4" />
           </button>
-          <div className="text-sm font-semibold">{formatMonthLong(month)}</div>
+          <div className="text-sm font-semibold">{formatMonthLong(month)} {month.getFullYear()}</div>
           <button
             type="button"
             onClick={goToNextMonth}
