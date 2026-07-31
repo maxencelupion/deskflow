@@ -18,6 +18,7 @@ export function ManagerSiteBookings({ pageSize = 5 }) {
   const [resourceIds, setResourceIds] = useState([])
   const [bookings, setBookings] = useState([])
   const [monthBookings, setMonthBookings] = useState([])
+  const [calendarMonth, setCalendarMonth] = useState(() => new Date())
   const [view, setView] = useState('calendar')
 
   useEffect(() => {
@@ -49,7 +50,7 @@ export function ManagerSiteBookings({ pageSize = 5 }) {
   }, [siteId])
 
   function loadMonthBookings() {
-    const { startOfMonth, startOfNextMonth } = getCurrentMonthRange()
+    const { startOfMonth, startOfNextMonth } = getCurrentMonthRange(calendarMonth)
 
     supabase
       .from('bookings')
@@ -74,7 +75,7 @@ export function ManagerSiteBookings({ pageSize = 5 }) {
 
     loadMonthBookings()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [siteId])
+  }, [siteId, calendarMonth])
 
   const { page, setPage, totalPages, loading, refetch } = usePaginatedQuery(
     async (page, pageSize) => {
@@ -128,7 +129,7 @@ export function ManagerSiteBookings({ pageSize = 5 }) {
       supabase.removeChannel(channel)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resourceIds.join(',')])
+  }, [resourceIds.join(','), calendarMonth])
 
   function renderCard(booking) {
     return (
@@ -157,6 +158,8 @@ export function ManagerSiteBookings({ pageSize = 5 }) {
         <BookingsMonthCalendar
           bookings={monthBookings}
           renderBooking={renderCard}
+          month={calendarMonth}
+          onMonthChange={setCalendarMonth}
           emptyMessage="No upcoming bookings on this day."
         />
       ) : loading ? (

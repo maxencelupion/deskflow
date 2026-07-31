@@ -32,6 +32,7 @@ export function NewBookingDialog({ onBooked }) {
   const [startTime, setStartTime] = useState('')
   const [hours, setHours] = useState('1')
   const [dayBookings, setDayBookings] = useState([])
+  const [calendarMonth, setCalendarMonth] = useState(() => new Date())
   const [usedHours, setUsedHours] = useState(null)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
@@ -49,6 +50,7 @@ export function NewBookingDialog({ onBooked }) {
     resetTimeSelection()
     setError(null)
     setNow(Date.now())
+    setCalendarMonth(new Date())
     setOpen(true)
   }
 
@@ -196,6 +198,9 @@ export function NewBookingDialog({ onBooked }) {
 
   const maxDateStr = lastDayOfCurrentMonth()
 
+  const isCurrentMonthDisplayed =
+    calendarMonth.getFullYear() === new Date().getFullYear() && calendarMonth.getMonth() === new Date().getMonth()
+
   const showResourceField = Boolean(siteId)
   const showDateField = showResourceField && Boolean(resourceId)
   const showStartTimeField = showDateField && Boolean(date)
@@ -319,14 +324,18 @@ export function NewBookingDialog({ onBooked }) {
                       resetTimeSelection()
                       setNow(Date.now())
                     }}
-                    startMonth={new Date()}
-                    endMonth={combineDateAndTime(maxDateStr, '00:00')}
-                    hideNavigation
+                    month={calendarMonth}
+                    onMonthChange={setCalendarMonth}
                     disabled={isDateDisabled}
                     modifiers={{ closed: isClosedWeekday }}
                     modifiersClassNames={{ closed: 'text-red-500!' }}
                     className="w-fit rounded-lg border border-home-border p-2 [--cell-size:--spacing(6)]"
                   />
+                  {!isCurrentMonthDisplayed && (
+                    <FieldDescription className="text-home-muted">
+                      You can only book within the current month.
+                    </FieldDescription>
+                  )}
                   {siteClosed && (
                     <FieldError>This site is closed on {DAY_NAMES[dayOfWeek]}.</FieldError>
                   )}

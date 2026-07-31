@@ -1,20 +1,21 @@
 import { useState } from 'react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { DAY_NAMES, formatGreetingDate, formatMonthLong, toDateInputValue, toTimeOfDay } from '@/lib/dates'
 import { BOOKING_STATUS } from '@/lib/enums'
 
 const MAX_VISIBLE_PER_DAY = 2
 
-function buildMonthGrid(now) {
-  const year = now.getFullYear()
-  const month = now.getMonth()
-  const daysInMonth = new Date(year, month + 1, 0).getDate()
-  const startWeekday = new Date(year, month, 1).getDay()
+function buildMonthGrid(month) {
+  const year = month.getFullYear()
+  const monthIndex = month.getMonth()
+  const daysInMonth = new Date(year, monthIndex + 1, 0).getDate()
+  const startWeekday = new Date(year, monthIndex, 1).getDay()
 
   const cells = Array(startWeekday).fill(null)
 
   for (let day = 1; day <= daysInMonth; day++) {
-    cells.push(new Date(year, month, day))
+    cells.push(new Date(year, monthIndex, day))
   }
 
   while (cells.length % 7 !== 0) {
@@ -24,9 +25,15 @@ function buildMonthGrid(now) {
   return cells
 }
 
-export function BookingsMonthCalendar({ bookings, renderBooking, emptyMessage = 'No bookings on this day.' }) {
-  const [now] = useState(() => new Date())
-  const [selectedDate, setSelectedDate] = useState(now)
+export function BookingsMonthCalendar({ bookings, renderBooking, month, onMonthChange, emptyMessage = 'No bookings on this day.' }) {
+  const [today] = useState(() => new Date())
+  const [prevMonth, setPrevMonth] = useState(month)
+  const [selectedDate, setSelectedDate] = useState(month)
+
+  if (prevMonth !== month) {
+    setPrevMonth(month)
+    setSelectedDate(month)
+  }
 
   const bookingsByDay = new Map()
   for (const booking of bookings) {
@@ -40,14 +47,40 @@ export function BookingsMonthCalendar({ bookings, renderBooking, emptyMessage = 
     dayBookings.sort((a, b) => new Date(a.start_at) - new Date(b.start_at))
   }
 
-  const todayKey = toDateInputValue(now)
+  const todayKey = toDateInputValue(today)
   const selectedDayKey = toDateInputValue(selectedDate)
   const selectedDayBookings = bookingsByDay.get(selectedDayKey) ?? []
+
+  function goToPreviousMonth() {
+    onMonthChange(new Date(month.getFullYear(), month.getMonth() - 1, 1))
+  }
+
+  function goToNextMonth() {
+    onMonthChange(new Date(month.getFullYear(), month.getMonth() + 1, 1))
+  }
 
   return (
     <div className="flex flex-col gap-5">
       <div className="rounded-2xl border border-home-border bg-home-card p-3">
-        <div className="mb-2 px-1 text-center text-sm font-semibold">{formatMonthLong(now)}</div>
+        <div className="mb-2 flex items-center justify-between px-1">
+          <button
+            type="button"
+            onClick={goToPreviousMonth}
+            aria-label="Previous month"
+            className="rounded-full border border-home-border p-1 text-home-ink transition-colors hover:bg-home-border"
+          >
+            <ChevronLeft className="size-4" />
+          </button>
+          <div className="text-sm font-semibold">{formatMonthLong(month)}</div>
+          <button
+            type="button"
+            onClick={goToNextMonth}
+            aria-label="Next month"
+            className="rounded-full border border-home-border p-1 text-home-ink transition-colors hover:bg-home-border"
+          >
+            <ChevronRight className="size-4" />
+          </button>
+        </div>
 
         <div className="grid grid-cols-7 gap-1">
           {DAY_NAMES.map((day) => (
@@ -56,7 +89,7 @@ export function BookingsMonthCalendar({ bookings, renderBooking, emptyMessage = 
             </div>
           ))}
 
-          {buildMonthGrid(now).map((date, index) => {
+          {buildMonthGrid(month).map((date, index) => {
             if (!date) {
               return <div key={`empty-${index}`} className="min-h-22" />
             }

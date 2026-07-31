@@ -16,6 +16,7 @@ export function AdminSiteBookingsList({ pageSize = 5, sites }) {
   const [siteId, setSiteId] = useState('')
   const [bookings, setBookings] = useState([])
   const [monthBookings, setMonthBookings] = useState([])
+  const [calendarMonth, setCalendarMonth] = useState(() => new Date())
   const [cancellingId, setCancellingId] = useState(null)
   const [view, setView] = useState('calendar')
 
@@ -52,7 +53,7 @@ export function AdminSiteBookingsList({ pageSize = 5, sites }) {
   )
 
   function loadMonthBookings() {
-    const { startOfMonth, startOfNextMonth } = getCurrentMonthRange()
+    const { startOfMonth, startOfNextMonth } = getCurrentMonthRange(calendarMonth)
 
     let query = supabase
       .from('bookings')
@@ -76,7 +77,7 @@ export function AdminSiteBookingsList({ pageSize = 5, sites }) {
     })
   }
 
-  useEffect(loadMonthBookings, [siteId])
+  useEffect(loadMonthBookings, [siteId, calendarMonth])
 
   useEffect(() => {
     const channel = supabase
@@ -91,7 +92,7 @@ export function AdminSiteBookingsList({ pageSize = 5, sites }) {
       supabase.removeChannel(channel)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [siteId])
+  }, [siteId, calendarMonth])
 
   async function handleCancel(booking) {
     const late = isLateCancellation(booking.start_at)
@@ -164,6 +165,8 @@ export function AdminSiteBookingsList({ pageSize = 5, sites }) {
         <BookingsMonthCalendar
           bookings={monthBookings}
           renderBooking={renderCard}
+          month={calendarMonth}
+          onMonthChange={setCalendarMonth}
           emptyMessage="No upcoming bookings on this day."
         />
       ) : loading ? (

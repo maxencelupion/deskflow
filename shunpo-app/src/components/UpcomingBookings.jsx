@@ -3,6 +3,7 @@ import { Spinner } from '@/components/Spinner'
 import { isLateCancellation } from '@/lib/bookings'
 import { groupConsecutiveBy } from '@/lib/utils'
 import { formatGreetingDate, formatTimeRange, toDateInputValue } from '@/lib/dates'
+import { BOOKING_STATUS } from '@/lib/enums'
 import { Pagination } from '@/components/ui/pagination'
 import { ViewToggle } from '@/components/ViewToggle'
 import { BookingsMonthCalendar } from '@/components/BookingsMonthCalendar'
@@ -10,6 +11,8 @@ import { BookingsMonthCalendar } from '@/components/BookingsMonthCalendar'
 export function UpcomingBookings({
   bookings,
   monthBookings,
+  calendarMonth,
+  onCalendarMonthChange,
   loading,
   cancellingId,
   onCancel,
@@ -21,6 +24,7 @@ export function UpcomingBookings({
 
   function renderCard(booking) {
     const late = isLateCancellation(booking.start_at)
+    const canCancel = booking.status === BOOKING_STATUS.CONFIRMED && new Date(booking.start_at) > new Date()
 
     return (
       <div key={booking.id} className="home-booking-card">
@@ -32,20 +36,22 @@ export function UpcomingBookings({
             {formatTimeRange(booking.start_at, booking.end_at)} - {booking.resources?.sites?.name} -{' '}
             {booking.hours_charged}h
           </div>
-          {late && (
+          {canCancel && late && (
             <div className="mt-0.5 text-xs text-home-muted-3">
               Cancelling now won't refund these hours (starting time in less than 24 hours).
             </div>
           )}
         </div>
-        <button
-          type="button"
-          disabled={cancellingId === booking.id}
-          onClick={() => onCancel(booking)}
-          className="home-pill-outline"
-        >
-          Cancel
-        </button>
+        {canCancel && (
+          <button
+            type="button"
+            disabled={cancellingId === booking.id}
+            onClick={() => onCancel(booking)}
+            className="home-pill-outline"
+          >
+            Cancel
+          </button>
+        )}
       </div>
     )
   }
@@ -61,6 +67,8 @@ export function UpcomingBookings({
         <BookingsMonthCalendar
           bookings={monthBookings}
           renderBooking={renderCard}
+          month={calendarMonth}
+          onMonthChange={onCalendarMonthChange}
           emptyMessage="No upcoming bookings on this day."
         />
       ) : loading ? (

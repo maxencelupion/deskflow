@@ -17,6 +17,7 @@ export default function UserDashboard() {
 
   const [bookings, setBookings] = useState([])
   const [monthBookings, setMonthBookings] = useState([])
+  const [calendarMonth, setCalendarMonth] = useState(() => new Date())
   const [nextBooking, setNextBooking] = useState(null)
   const [usedHours, setUsedHours] = useState(null)
   const [cancellingId, setCancellingId] = useState(null)
@@ -33,7 +34,7 @@ export default function UserDashboard() {
 
       const { data, error, count } = await supabase
         .from('bookings')
-        .select('id, start_at, end_at, hours_charged, seat_number, resources(name, sites(name))', { count: 'exact' })
+        .select('id, start_at, end_at, hours_charged, seat_number, status, resources(name, sites(name))', { count: 'exact' })
         .eq('user_id', profile.id)
         .eq('status', BOOKING_STATUS.CONFIRMED)
         .gte('start_at', new Date().toISOString())
@@ -58,7 +59,6 @@ export default function UserDashboard() {
     }
 
     let cancelled = false
-    const { startOfNextMonth } = getCurrentMonthRange()
 
     Promise.all([
       supabase
@@ -73,14 +73,7 @@ export default function UserDashboard() {
         console.error('Error loading monthly usage:', error)
         return null
       }),
-      supabase
-        .from('bookings')
-        .select('id, start_at, end_at, hours_charged, seat_number, status, resources(name, sites(name))')
-        .eq('user_id', profile.id)
-        .gte('start_at', new Date().toISOString())
-        .lt('start_at', startOfNextMonth.toISOString())
-        .order('start_at', { ascending: true }),
-    ]).then(([nextResult, used, monthResult]) => {
+    ]).then(([nextResult, used]) => {
       if (cancelled) {
         return
       }
@@ -91,12 +84,6 @@ export default function UserDashboard() {
         setNextBooking(nextResult.data[0] ?? null)
       }
 
-      if (monthResult.error) {
-        console.error('Error loading month bookings:', monthResult.error)
-      } else {
-        setMonthBookings(monthResult.data)
-      }
-
       setUsedHours(used)
     })
 
@@ -104,6 +91,30 @@ export default function UserDashboard() {
       cancelled = true
     }
   }, [profile, summaryReloadKey])
+
+  useEffect(() => {
+    if (!profile) {
+      return
+    }
+
+    const { startOfNextMonth } = getCurrentMonthRange(calendarMonth)
+
+    supabase
+      .from('bookings')
+      .select('id, start_at, end_at, hours_charged, seat_number, status, resources(name, sites(name))')
+      .eq('user_id', profile.id)
+      .eq('status', BOOKING_STATUS.CONFIRMED)
+      .gte('start_at', new Date().toISOString())
+      .lt('start_at', startOfNextMonth.toISOString())
+      .order('start_at', { ascending: true })
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('Error loading month bookings:', error)
+        } else {
+          setMonthBookings(data)
+        }
+      })
+  }, [profile, calendarMonth, summaryReloadKey])
 
   function handleDataChanged() {
     setSummaryReloadKey((k) => k + 1)
@@ -172,6 +183,8 @@ export default function UserDashboard() {
         <UpcomingBookings
           bookings={bookings}
           monthBookings={monthBookings}
+          calendarMonth={calendarMonth}
+          onCalendarMonthChange={setCalendarMonth}
           loading={loading}
           cancellingId={cancellingId}
           onCancel={handleCancel}
