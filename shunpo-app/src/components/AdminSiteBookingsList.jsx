@@ -1,19 +1,23 @@
 import { Spinner } from '@/components/Spinner'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { groupConsecutiveBy } from '@/lib/utils'
 import { usePaginatedQuery } from '@/hooks/usePaginatedQuery'
 import { cancelBooking, isLateCancellation } from '@/lib/bookings'
-import { formatGreetingDate, formatTimeRange, toDateInputValue } from '@/lib/dates'
+import { formatGreetingDate, formatTimeRange, getCurrentMonthRange, toDateInputValue } from '@/lib/dates'
 import { BOOKING_STATUS } from '@/lib/enums'
 import { Pagination } from '@/components/ui/pagination'
 import { SiteChipPicker } from '@/components/SiteChipPicker'
 import { BookingStatusBadge } from '@/components/BookingStatusBadge'
+import { ViewToggle } from '@/components/ViewToggle'
+import { BookingsMonthCalendar } from '@/components/BookingsMonthCalendar'
 
 export function AdminSiteBookingsList({ pageSize = 5, sites }) {
   const [siteId, setSiteId] = useState('')
   const [bookings, setBookings] = useState([])
+  const [monthBookings, setMonthBookings] = useState([])
   const [cancellingId, setCancellingId] = useState(null)
+  const [view, setView] = useState('calendar')
 
   const { page, setPage, totalPages, loading, refetch } = usePaginatedQuery(
     async (page, pageSize) => {
@@ -47,6 +51,33 @@ export function AdminSiteBookingsList({ pageSize = 5, sites }) {
     pageSize
   )
 
+  function loadMonthBookings() {
+    const { startOfMonth, startOfNextMonth } = getCurrentMonthRange()
+
+    let query = supabase
+      .from('bookings')
+      .select(
+        'id, start_at, end_at, hours_charged, seat_number, status, resources!inner(name, site_id, sites(name)), profiles(email)'
+      )
+      .gte('start_at', startOfMonth.toISOString())
+      .lt('start_at', startOfNextMonth.toISOString())
+      .order('start_at', { ascending: true })
+
+    if (siteId) {
+      query = query.eq('resources.site_id', siteId)
+    }
+
+    query.then(({ data, error }) => {
+      if (error) {
+        console.error('Error loading month bookings:', error)
+      } else {
+        setMonthBookings(data)
+      }
+    })
+  }
+
+  useEffect(loadMonthBookings, [siteId])
+
   async function handleCancel(booking) {
     const late = isLateCancellation(booking.start_at)
 
@@ -66,14 +97,49 @@ export function AdminSiteBookingsList({ pageSize = 5, sites }) {
       console.error('Error cancelling booking:', error)
     } else {
       refetch()
+      loadMonthBookings()
     }
 
     setCancellingId(null)
   }
 
+  function renderCard(booking) {
+    const canCancel = booking.status === BOOKING_STATUS.CONFIRMED && new Date(booking.start_at) > new Date()
+
+    return (
+      <div key={booking.id} className="home-booking-card">
+        <div className="flex-1">
+          <div className="text-[15px] font-semibold">
+            {booking.resources?.sites?.name} · {booking.resources?.name} · Seat {booking.seat_number}
+          </div>
+          <div className="text-sm text-home-muted">
+            {formatTimeRange(booking.start_at, booking.end_at)} - {booking.profiles?.email} -{' '}
+            {booking.hours_charged} hour{booking.hours_charged > 1 ? 's' : ''}
+          </div>
+          <div className="mt-1.5">
+            <BookingStatusBadge status={booking.status} />
+          </div>
+        </div>
+        {canCancel && (
+          <button
+            type="button"
+            disabled={cancellingId === booking.id}
+            onClick={() => handleCancel(booking)}
+            className="home-pill-outline"
+          >
+            Cancel
+          </button>
+        )}
+      </div>
+    )
+  }
+
   return (
     <div>
-      <h2 className="home-section-label mb-3.5">Bookings</h2>
+      <div className="mb-3.5 flex flex-wrap items-center justify-between gap-3">
+        <h2 className="home-section-label">Bookings</h2>
+        <ViewToggle view={view} onChange={setView} />
+      </div>
 
       <div className="mb-3.5">
         <SiteChipPicker sites={sites} value={siteId} onChange={setSiteId} includeAllOption />
@@ -81,6 +147,12 @@ export function AdminSiteBookingsList({ pageSize = 5, sites }) {
 
       {loading ? (
         <div className="flex justify-center py-4"><Spinner /></div>
+      ) : view === 'calendar' ? (
+        <BookingsMonthCalendar
+          bookings={monthBookings}
+          renderBooking={renderCard}
+          emptyMessage="No upcoming bookings on this day."
+        />
       ) : bookings.length === 0 ? (
         <p className="py-4 text-sm text-home-muted-2">No bookings yet.</p>
       ) : (
@@ -91,39 +163,7 @@ export function AdminSiteBookingsList({ pageSize = 5, sites }) {
                 {formatGreetingDate(new Date(group.items[0].start_at))}
               </div>
               <div className="flex flex-col gap-2.5">
-                {group.items.map((booking) => {
-                  const canCancel = booking.status === BOOKING_STATUS.CONFIRMED && new Date(booking.start_at) > new Date()
-
-                  return (
-                    <div
-                      key={booking.id}
-                      className="home-booking-card"
-                    >
-                      <div className="flex-1">
-                        <div className="text-[15px] font-semibold">
-                          {booking.resources?.sites?.name} · {booking.resources?.name} · Seat {booking.seat_number}
-                        </div>
-                        <div className="text-sm text-home-muted">
-                          {formatTimeRange(booking.start_at, booking.end_at)} - {booking.profiles?.email} -{' '}
-                          {booking.hours_charged} hour{booking.hours_charged > 1 ? 's' : ''}
-                        </div>
-                        <div className="mt-1.5">
-                          <BookingStatusBadge status={booking.status} />
-                        </div>
-                      </div>
-                      {canCancel && (
-                        <button
-                          type="button"
-                          disabled={cancellingId === booking.id}
-                          onClick={() => handleCancel(booking)}
-                          className="home-pill-outline"
-                        >
-                          Cancel
-                        </button>
-                      )}
-                    </div>
-                  )
-                })}
+                {group.items.map(renderCard)}
               </div>
             </div>
           ))}

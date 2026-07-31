@@ -16,6 +16,7 @@ export default function UserDashboard() {
   const pageSize = usePageSize()
 
   const [bookings, setBookings] = useState([])
+  const [monthBookings, setMonthBookings] = useState([])
   const [nextBooking, setNextBooking] = useState(null)
   const [usedHours, setUsedHours] = useState(null)
   const [cancellingId, setCancellingId] = useState(null)
@@ -57,6 +58,7 @@ export default function UserDashboard() {
     }
 
     let cancelled = false
+    const { startOfNextMonth } = getCurrentMonthRange()
 
     Promise.all([
       supabase
@@ -71,7 +73,14 @@ export default function UserDashboard() {
         console.error('Error loading monthly usage:', error)
         return null
       }),
-    ]).then(([nextResult, used]) => {
+      supabase
+        .from('bookings')
+        .select('id, start_at, end_at, hours_charged, seat_number, status, resources(name, sites(name))')
+        .eq('user_id', profile.id)
+        .gte('start_at', new Date().toISOString())
+        .lt('start_at', startOfNextMonth.toISOString())
+        .order('start_at', { ascending: true }),
+    ]).then(([nextResult, used, monthResult]) => {
       if (cancelled) {
         return
       }
@@ -80,6 +89,12 @@ export default function UserDashboard() {
         console.error('Error loading next booking:', nextResult.error)
       } else {
         setNextBooking(nextResult.data[0] ?? null)
+      }
+
+      if (monthResult.error) {
+        console.error('Error loading month bookings:', monthResult.error)
+      } else {
+        setMonthBookings(monthResult.data)
       }
 
       setUsedHours(used)
@@ -156,6 +171,7 @@ export default function UserDashboard() {
 
         <UpcomingBookings
           bookings={bookings}
+          monthBookings={monthBookings}
           loading={loading}
           cancellingId={cancellingId}
           onCancel={handleCancel}

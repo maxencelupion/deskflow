@@ -4,9 +4,11 @@ import { useAuth } from '@/context/useAuth'
 import { supabase } from '@/lib/supabase'
 import { groupConsecutiveBy } from '@/lib/utils'
 import { usePaginatedQuery } from '@/hooks/usePaginatedQuery'
-import { formatGreetingDate, formatTimeRange, toDateInputValue } from '@/lib/dates'
+import { formatGreetingDate, formatTimeRange, getCurrentMonthRange, toDateInputValue } from '@/lib/dates'
 import { Pagination } from '@/components/ui/pagination'
 import { BookingStatusBadge } from '@/components/BookingStatusBadge'
+import { ViewToggle } from '@/components/ViewToggle'
+import { BookingsMonthCalendar } from '@/components/BookingsMonthCalendar'
 
 export function ManagerSiteBookings({ pageSize = 5 }) {
   const { profile } = useAuth()
@@ -14,6 +16,8 @@ export function ManagerSiteBookings({ pageSize = 5 }) {
 
   const [siteName, setSiteName] = useState('')
   const [bookings, setBookings] = useState([])
+  const [monthBookings, setMonthBookings] = useState([])
+  const [view, setView] = useState('calendar')
 
   useEffect(() => {
     if (!siteId) {
@@ -27,6 +31,29 @@ export function ManagerSiteBookings({ pageSize = 5 }) {
         setSiteName(data.name)
       }
     })
+  }, [siteId])
+
+  useEffect(() => {
+    if (!siteId) {
+      return
+    }
+
+    const { startOfMonth, startOfNextMonth } = getCurrentMonthRange()
+
+    supabase
+      .from('bookings')
+      .select('id, start_at, end_at, hours_charged, seat_number, status, resources!inner(name, site_id), profiles(email)')
+      .eq('resources.site_id', siteId)
+      .gte('start_at', startOfMonth.toISOString())
+      .lt('start_at', startOfNextMonth.toISOString())
+      .order('start_at', { ascending: true })
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('Error loading month bookings:', error)
+        } else {
+          setMonthBookings(data)
+        }
+      })
   }, [siteId])
 
   const { page, setPage, totalPages, loading } = usePaginatedQuery(
@@ -60,11 +87,37 @@ export function ManagerSiteBookings({ pageSize = 5 }) {
     pageSize
   )
 
+  function renderCard(booking) {
+    return (
+      <div key={booking.id} className="home-booking-card">
+        <div className="flex-1">
+          <div className="text-[15px] font-semibold">
+            {booking.resources?.name} : Seat {booking.seat_number}
+          </div>
+          <div className="text-sm text-home-muted">
+            {formatTimeRange(booking.start_at, booking.end_at)} - {booking.profiles?.email} - {booking.hours_charged} hour{booking.hours_charged > 1 ? 's' : ''}
+          </div>
+        </div>
+        <BookingStatusBadge status={booking.status} />
+      </div>
+    )
+  }
+
   return (
     <div>
-      <h2 className="mb-3.5 text-base font-semibold">{siteName} bookings</h2>
+      <div className="mb-3.5 flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-base font-semibold">{siteName} bookings</h2>
+        <ViewToggle view={view} onChange={setView} />
+      </div>
+
       {loading ? (
         <div className="flex justify-center py-4"><Spinner /></div>
+      ) : view === 'calendar' ? (
+        <BookingsMonthCalendar
+          bookings={monthBookings}
+          renderBooking={renderCard}
+          emptyMessage="No upcoming bookings on this day."
+        />
       ) : bookings.length === 0 ? (
         <p className="py-4 text-sm text-home-muted-2">No bookings yet.</p>
       ) : (
@@ -75,22 +128,7 @@ export function ManagerSiteBookings({ pageSize = 5 }) {
                 {formatGreetingDate(new Date(group.items[0].start_at))}
               </div>
               <div className="flex flex-col gap-2.5">
-                {group.items.map((booking) => (
-                  <div
-                    key={booking.id}
-                    className="home-booking-card"
-                  >
-                    <div className="flex-1">
-                      <div className="text-[15px] font-semibold">
-                        {booking.resources?.name} : Seat {booking.seat_number}
-                      </div>
-                      <div className="text-sm text-home-muted">
-                        {formatTimeRange(booking.start_at, booking.end_at)} - {booking.profiles?.email} - {booking.hours_charged} hour{booking.hours_charged > 1 ? 's' : ''}
-                      </div>
-                    </div>
-                    <BookingStatusBadge status={booking.status} />
-                  </div>
-                ))}
+                {group.items.map(renderCard)}
               </div>
             </div>
           ))}
